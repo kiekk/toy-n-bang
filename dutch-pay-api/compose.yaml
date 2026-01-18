@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dutch-pay-postgres
+    environment:
+      POSTGRES_DB: dutchpay
+      POSTGRES_USER: dutchpay
+      POSTGRES_PASSWORD: dutchpay
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dutchpay -d dutchpay"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
