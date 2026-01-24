@@ -1,9 +1,11 @@
 package com.pay.dutchpayapi.domain.participant
 
-import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
-interface ParticipantRepository : JpaRepository<Participant, UUID> {
-
-    fun findByGatheringId(gatheringId: UUID): List<Participant>
+interface ParticipantRepository {
+    fun save(participant: Participant): Participant
+    fun findById(id: Long): Optional<Participant>
+    fun findByGatheringId(gatheringId: Long): List<Participant>
+    fun existsById(id: Long): Boolean
+    fun deleteById(id: Long)
 }

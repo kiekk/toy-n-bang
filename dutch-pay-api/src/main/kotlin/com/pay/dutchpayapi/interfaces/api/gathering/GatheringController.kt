@@ -1,50 +1,49 @@
 package com.pay.dutchpayapi.interfaces.api.gathering
 
-import com.pay.dutchpayapi.application.gathering.GatheringCreateRequest
-import com.pay.dutchpayapi.application.gathering.GatheringResponse
-import com.pay.dutchpayapi.application.gathering.GatheringService
-import com.pay.dutchpayapi.application.gathering.GatheringUpdateRequest
+import com.pay.dutchpayapi.application.gathering.GatheringFacade
+import com.pay.dutchpayapi.application.gathering.request.GatheringCreateRequest
+import com.pay.dutchpayapi.application.gathering.request.GatheringUpdateRequest
+import com.pay.dutchpayapi.application.gathering.response.GatheringResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.*
 
 @RestController
 @RequestMapping("/api/gatherings")
 class GatheringController(
-    private val gatheringService: GatheringService
+    private val gatheringFacade: GatheringFacade
 ) {
 
     @PostMapping
     fun create(@RequestBody request: GatheringCreateRequest): ResponseEntity<GatheringResponse> {
-        val response = gatheringService.create(request)
+        val response = gatheringFacade.create(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(response)
     }
 
     @GetMapping
     fun findAll(): ResponseEntity<List<GatheringResponse>> {
-        val responses = gatheringService.findAll()
+        val responses = gatheringFacade.findAll()
         return ResponseEntity.ok(responses)
     }
 
     @GetMapping("/{id}")
-    fun findById(@PathVariable id: UUID): ResponseEntity<GatheringResponse> {
-        val response = gatheringService.findById(id)
+    fun findById(@PathVariable id: Long): ResponseEntity<GatheringResponse> {
+        val response = gatheringFacade.findById(id)
         return ResponseEntity.ok(response)
     }
 
     @PatchMapping("/{id}")
     fun update(
-        @PathVariable id: UUID,
+        @PathVariable id: Long,
         @RequestBody request: GatheringUpdateRequest
     ): ResponseEntity<GatheringResponse> {
-        val response = gatheringService.update(id, request)
+        val response = gatheringFacade.update(id, request)
         return ResponseEntity.ok(response)
     }
 
     @DeleteMapping("/{id}")
-    fun delete(@PathVariable id: UUID): ResponseEntity<Void> {
-        gatheringService.delete(id)
+    fun delete(@PathVariable id: Long): ResponseEntity<Void> {
+        gatheringFacade.delete(id)
         return ResponseEntity.noContent().build()
     }
 }
