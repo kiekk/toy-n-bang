@@ -1,12 +1,16 @@
 package com.pay.dutchpayapi.application.round
 
+import com.pay.dutchpayapi.application.round.request.ExclusionRequest
 import com.pay.dutchpayapi.application.round.request.RoundCreateRequest
 import com.pay.dutchpayapi.application.round.request.RoundUpdateRequest
 import com.pay.dutchpayapi.application.round.response.ExclusionResponse
 import com.pay.dutchpayapi.application.round.response.RoundResponse
+import com.pay.dutchpayapi.domain.exclusion.Exclusion
 import com.pay.dutchpayapi.domain.exclusion.ExclusionService
 import com.pay.dutchpayapi.domain.gathering.GatheringService
+import com.pay.dutchpayapi.domain.participant.Participant
 import com.pay.dutchpayapi.domain.participant.ParticipantService
+import com.pay.dutchpayapi.domain.round.SettlementRound
 import com.pay.dutchpayapi.domain.round.SettlementRoundService
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -33,22 +37,7 @@ class SettlementRoundFacade(
             gatheringId = gatheringId
         )
 
-        val exclusionResponses = request.exclusions?.map { exclusionRequest ->
-            val participant = participantService.findById(exclusionRequest.participantId)
-
-            val exclusion = exclusionService.create(
-                reason = exclusionRequest.reason,
-                participantId = exclusionRequest.participantId,
-                roundId = round.id!!
-            )
-
-            ExclusionResponse(
-                id = exclusion.id!!,
-                participantId = exclusion.participantId,
-                participantName = participant.name,
-                reason = exclusion.reason
-            )
-        } ?: emptyList()
+        val exclusionResponses = createExclusions(request.exclusions, round.id!!)
 
         return RoundResponse.from(
             round = round,
@@ -60,49 +49,17 @@ class SettlementRoundFacade(
     fun findByGatheringId(gatheringId: Long): List<RoundResponse> {
         gatheringService.findById(gatheringId)
 
-        val participants = participantService.findByGatheringId(gatheringId)
-        val participantMap = participants.associateBy { it.id!! }
+        val participantMap = getParticipantMap(gatheringId)
 
         return roundService.findByGatheringId(gatheringId).map { round ->
-            val exclusions = exclusionService.findByRoundId(round.id!!)
-            val exclusionResponses = exclusions.map { exclusion ->
-                ExclusionResponse(
-                    id = exclusion.id!!,
-                    participantId = exclusion.participantId,
-                    participantName = participantMap[exclusion.participantId]?.name ?: "",
-                    reason = exclusion.reason
-                )
-            }
-            RoundResponse.from(
-                round = round,
-                payerName = participantMap[round.payerId]?.name ?: "",
-                exclusions = exclusionResponses
-            )
+            toRoundResponse(round, participantMap)
         }
     }
 
     fun findById(id: Long): RoundResponse {
         val round = roundService.findById(id)
-        val payer = participantService.findById(round.payerId)
-
-        val participants = participantService.findByGatheringId(round.gatheringId)
-        val participantMap = participants.associateBy { it.id!! }
-
-        val exclusions = exclusionService.findByRoundId(round.id!!)
-        val exclusionResponses = exclusions.map { exclusion ->
-            ExclusionResponse(
-                id = exclusion.id!!,
-                participantId = exclusion.participantId,
-                participantName = participantMap[exclusion.participantId]?.name ?: "",
-                reason = exclusion.reason
-            )
-        }
-
-        return RoundResponse.from(
-            round = round,
-            payerName = payer.name,
-            exclusions = exclusionResponses
-        )
+        val participantMap = getParticipantMap(round.gatheringId)
+        return toRoundResponse(round, participantMap)
     }
 
     @Transactional
@@ -112,25 +69,7 @@ class SettlementRoundFacade(
 
         exclusionService.deleteByRoundId(round.id!!)
 
-        val participants = participantService.findByGatheringId(round.gatheringId)
-        val participantMap = participants.associateBy { it.id!! }
-
-        val exclusionResponses = request.exclusions?.map { exclusionRequest ->
-            val participant = participantService.findById(exclusionRequest.participantId)
-
-            val exclusion = exclusionService.create(
-                reason = exclusionRequest.reason,
-                participantId = exclusionRequest.participantId,
-                roundId = round.id!!
-            )
-
-            ExclusionResponse(
-                id = exclusion.id!!,
-                participantId = exclusion.participantId,
-                participantName = participant.name,
-                reason = exclusion.reason
-            )
-        } ?: emptyList()
+        val exclusionResponses = createExclusions(request.exclusions, round.id!!)
 
         return RoundResponse.from(
             round = round,
@@ -148,13 +87,31 @@ class SettlementRoundFacade(
     @Transactional
     fun updateReceiptImage(id: Long, imageUrl: String): RoundResponse {
         val round = roundService.updateReceiptImage(id, imageUrl)
-        val payer = participantService.findById(round.payerId)
+        val participantMap = getParticipantMap(round.gatheringId)
+        return toRoundResponse(round, participantMap)
+    }
 
-        val participants = participantService.findByGatheringId(round.gatheringId)
-        val participantMap = participants.associateBy { it.id!! }
+    private fun getParticipantMap(gatheringId: Long): Map<Long, Participant> {
+        return participantService.findByGatheringId(gatheringId).associateBy { it.id!! }
+    }
 
-        val exclusions = exclusionService.findByRoundId(round.id!!)
-        val exclusionResponses = exclusions.map { exclusion ->
+    private fun toRoundResponse(round: SettlementRound, participantMap: Map<Long, Participant>): RoundResponse {
+        val exclusionResponses = toExclusionResponses(
+            exclusionService.findByRoundId(round.id!!),
+            participantMap
+        )
+        return RoundResponse.from(
+            round = round,
+            payerName = participantMap[round.payerId]?.name ?: "",
+            exclusions = exclusionResponses
+        )
+    }
+
+    private fun toExclusionResponses(
+        exclusions: List<Exclusion>,
+        participantMap: Map<Long, Participant>
+    ): List<ExclusionResponse> {
+        return exclusions.map { exclusion ->
             ExclusionResponse(
                 id = exclusion.id!!,
                 participantId = exclusion.participantId,
@@ -162,11 +119,22 @@ class SettlementRoundFacade(
                 reason = exclusion.reason
             )
         }
+    }
 
-        return RoundResponse.from(
-            round = round,
-            payerName = payer.name,
-            exclusions = exclusionResponses
-        )
+    private fun createExclusions(requests: List<ExclusionRequest>?, roundId: Long): List<ExclusionResponse> {
+        return requests?.map { request ->
+            val participant = participantService.findById(request.participantId)
+            val exclusion = exclusionService.create(
+                reason = request.reason,
+                participantId = request.participantId,
+                roundId = roundId
+            )
+            ExclusionResponse(
+                id = exclusion.id!!,
+                participantId = exclusion.participantId,
+                participantName = participant.name,
+                reason = exclusion.reason
+            )
+        } ?: emptyList()
     }
 }

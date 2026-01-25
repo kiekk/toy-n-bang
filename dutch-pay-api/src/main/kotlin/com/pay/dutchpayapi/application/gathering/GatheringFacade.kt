@@ -8,7 +8,9 @@ import com.pay.dutchpayapi.application.round.response.ExclusionResponse
 import com.pay.dutchpayapi.application.round.response.RoundResponse
 import com.pay.dutchpayapi.domain.exclusion.ExclusionService
 import com.pay.dutchpayapi.domain.gathering.GatheringService
+import com.pay.dutchpayapi.domain.participant.Participant
 import com.pay.dutchpayapi.domain.participant.ParticipantService
+import com.pay.dutchpayapi.domain.round.SettlementRound
 import com.pay.dutchpayapi.domain.round.SettlementRoundService
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -52,22 +54,7 @@ class GatheringFacade(
         val participantMap = participants.associateBy { it.id!! }
 
         val rounds = roundService.findByGatheringId(id)
-        val roundResponses = rounds.map { round ->
-            val exclusions = exclusionService.findByRoundId(round.id!!)
-            val exclusionResponses = exclusions.map { exclusion ->
-                ExclusionResponse(
-                    id = exclusion.id!!,
-                    participantId = exclusion.participantId,
-                    participantName = participantMap[exclusion.participantId]?.name ?: "",
-                    reason = exclusion.reason
-                )
-            }
-            RoundResponse.from(
-                round = round,
-                payerName = participantMap[round.payerId]?.name ?: "",
-                exclusions = exclusionResponses
-            )
-        }
+        val roundResponses = rounds.map { toRoundResponse(it, participantMap) }
 
         return GatheringResponse.from(
             gathering = gathering,
@@ -85,5 +72,22 @@ class GatheringFacade(
     @Transactional
     fun delete(id: Long) {
         gatheringService.delete(id)
+    }
+
+    private fun toRoundResponse(round: SettlementRound, participantMap: Map<Long, Participant>): RoundResponse {
+        val exclusions = exclusionService.findByRoundId(round.id!!)
+        val exclusionResponses = exclusions.map { exclusion ->
+            ExclusionResponse(
+                id = exclusion.id!!,
+                participantId = exclusion.participantId,
+                participantName = participantMap[exclusion.participantId]?.name ?: "",
+                reason = exclusion.reason
+            )
+        }
+        return RoundResponse.from(
+            round = round,
+            payerName = participantMap[round.payerId]?.name ?: "",
+            exclusions = exclusionResponses
+        )
     }
 }
