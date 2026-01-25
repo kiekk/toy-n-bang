@@ -13,7 +13,7 @@ class TestcontainersConfiguration {
     @ServiceConnection
     fun postgresContainer(): PostgreSQLContainer<*> {
         return PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
-            .withDatabaseName("dutchpay_test")
+            .withDatabaseName("nbang_test")
             .withUsername("test")
             .withPassword("test")
     }

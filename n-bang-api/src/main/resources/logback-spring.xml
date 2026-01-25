@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- ============================================ -->
+    <!-- Properties -->
+    <!-- ============================================ -->
+    <property name="LOG_DIR" value="${LOG_PATH:-./logs}" />
+    <property name="APP_NAME" value="n-bang-api" />
+
+    <!-- 로그 보관 기간 (일) -->
+    <property name="MAX_HISTORY" value="15" />
+
+    <!-- 파일당 최대 크기 -->
+    <property name="MAX_FILE_SIZE" value="100MB" />
+
+    <!-- 전체 로그 최대 크기 -->
+    <property name="TOTAL_SIZE_CAP" value="3GB" />
+
+    <!-- ============================================ -->
+    <!-- Console Pattern (개발용) -->
+    <!-- ============================================ -->
+    <property name="CONSOLE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan([%X{traceId:-}]) %logger{36} - %msg%n" />
+
+    <!-- ============================================ -->
+    <!-- File Pattern (JSON 형식 - Loki 연동용) -->
+    <!-- ============================================ -->
+    <property name="FILE_PATTERN_JSON"
+              value="{&quot;@timestamp&quot;:&quot;%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}&quot;,&quot;level&quot;:&quot;%level&quot;,&quot;logger_name&quot;:&quot;%logger&quot;,&quot;message&quot;:&quot;%msg&quot;,&quot;traceId&quot;:&quot;%X{traceId:-}&quot;,&quot;requestId&quot;:&quot;%X{requestId:-}&quot;,&quot;clientIp&quot;:&quot;%X{clientIp:-}&quot;,&quot;requestUri&quot;:&quot;%X{requestUri:-}&quot;,&quot;requestMethod&quot;:&quot;%X{requestMethod:-}&quot;,&quot;thread&quot;:&quot;%thread&quot;,&quot;app&quot;:&quot;${APP_NAME}&quot;}%n" />
+
+    <!-- ============================================ -->
+    <!-- File Pattern (Plain Text) -->
+    <!-- ============================================ -->
+    <property name="FILE_PATTERN_TEXT"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [traceId=%X{traceId:-}, requestId=%X{requestId:-}] %logger{36} - %msg%n" />
+
+    <!-- ============================================ -->
+    <!-- Console Appender -->
+    <!-- ============================================ -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Application Log (JSON) - Rolling File -->
+    <!-- ============================================ -->
+    <appender name="APP_LOG_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/application.log</file>
+        <encoder>
+            <pattern>${FILE_PATTERN_JSON}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 파일명 패턴: application.2024-01-15.0.log.gz -->
+            <fileNamePattern>${LOG_DIR}/archive/application.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 파일당 최대 크기 -->
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <!-- 보관 기간 (15일) -->
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <!-- 전체 로그 최대 크기 -->
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+            <!-- 시작 시 오래된 로그 정리 -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Application Log (Text) - Rolling File -->
+    <!-- ============================================ -->
+    <appender name="APP_LOG_TEXT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/application-text.log</file>
+        <encoder>
+            <pattern>${FILE_PATTERN_TEXT}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/archive/application-text.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Error Log - Rolling File -->
+    <!-- ============================================ -->
+    <appender name="ERROR_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>${FILE_PATTERN_JSON}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/archive/error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Access Log - Rolling File -->
+    <!-- ============================================ -->
+    <appender name="ACCESS_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/access.log</file>
+        <encoder>
+            <pattern>${FILE_PATTERN_JSON}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/archive/access.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Async Appenders (성능 향상) -->
+    <!-- ============================================ -->
+    <appender name="ASYNC_APP_LOG" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="APP_LOG_JSON" />
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <appender name="ASYNC_ERROR_LOG" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ERROR_LOG" />
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+    <!-- ============================================ -->
+    <!-- Logger Configuration -->
+    <!-- ============================================ -->
+
+    <!-- MDC Logging Filter (Access Log) -->
+    <logger name="com.nbang.nbangapi.support.logging.MdcLoggingFilter" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ACCESS_LOG" />
+    </logger>
+
+    <!-- Application Logger -->
+    <logger name="com.nbang" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ASYNC_APP_LOG" />
+        <appender-ref ref="ASYNC_ERROR_LOG" />
+    </logger>
+
+    <!-- SQL Logger (개발 시에만 사용) -->
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Spring Framework -->
+    <logger name="org.springframework" level="INFO" />
+    <logger name="org.springframework.web" level="INFO" />
+
+    <!-- HikariCP -->
+    <logger name="com.zaxxer.hikari" level="INFO" />
+
+    <!-- ============================================ -->
+    <!-- Profile-specific Configuration -->
+    <!-- ============================================ -->
+
+    <!-- Local Profile -->
+    <springProfile name="default,local">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+
+    <!-- Production Profile -->
+    <springProfile name="prod">
+        <logger name="com.nbang" level="INFO" />
+        <logger name="org.hibernate.SQL" level="WARN" />
+        <logger name="org.hibernate.orm.jdbc.bind" level="WARN" />
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="ASYNC_APP_LOG" />
+            <appender-ref ref="ASYNC_ERROR_LOG" />
+        </root>
+    </springProfile>
+
+</configuration>
