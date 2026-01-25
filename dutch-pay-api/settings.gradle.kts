@@ -1,1 +1,1 @@
-rootProject.name = "dutch-pay-api"
+rootProject.name = "n-bang-api"

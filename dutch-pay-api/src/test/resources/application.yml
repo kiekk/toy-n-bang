@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dutch-pay-api-test
+    name: n-bang-api-test
 
   datasource:
     driver-class-name: org.postgresql.Driver

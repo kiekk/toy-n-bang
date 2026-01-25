@@ -1,12 +1,12 @@
 spring:
   application:
-    name: dutch-pay-api
+    name: n-bang-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/dutchpay
+    url: jdbc:postgresql://localhost:5432/nbang
     driver-class-name: org.postgresql.Driver
-    username: dutchpay
-    password: dutchpay
+    username: nbang
+    password: nbang
 
   jpa:
     hibernate:
