@@ -14,6 +14,8 @@ class GatheringServiceTest @Autowired constructor(
     private val gatheringService: GatheringService
 ) : IntegrationTest() {
 
+    private val testMemberId = 1L
+
     @Test
     @DisplayName("모임을 생성할 수 있다")
     fun create() {
@@ -23,7 +25,7 @@ class GatheringServiceTest @Autowired constructor(
         val endDate = LocalDate.of(2025, 1, 17)
 
         // when
-        val gathering = gatheringService.create(name, startDate, endDate)
+        val gathering = gatheringService.create(testMemberId, name, startDate, endDate)
 
         // then
         assertThat(gathering.id).isNotNull()
@@ -37,6 +39,7 @@ class GatheringServiceTest @Autowired constructor(
     fun findById() {
         // given
         val created = gatheringService.create(
+            memberId = testMemberId,
             name = "제주도 여행",
             startDate = LocalDate.of(2025, 1, 15),
             endDate = LocalDate.of(2025, 1, 17)
@@ -64,14 +67,14 @@ class GatheringServiceTest @Autowired constructor(
     }
 
     @Test
-    @DisplayName("모든 모임 목록을 조회할 수 있다")
-    fun findAll() {
+    @DisplayName("회원별 모임 목록을 조회할 수 있다")
+    fun findAllByMemberId() {
         // given
-        gatheringService.create("여행1", LocalDate.now(), LocalDate.now().plusDays(1))
-        gatheringService.create("여행2", LocalDate.now(), LocalDate.now().plusDays(2))
+        gatheringService.create(testMemberId, "여행1", LocalDate.now(), LocalDate.now().plusDays(1))
+        gatheringService.create(testMemberId, "여행2", LocalDate.now(), LocalDate.now().plusDays(2))
 
         // when
-        val gatherings = gatheringService.findAll()
+        val gatherings = gatheringService.findAllByMemberId(testMemberId)
 
         // then
         assertThat(gatherings).hasSizeGreaterThanOrEqualTo(2)
@@ -82,6 +85,7 @@ class GatheringServiceTest @Autowired constructor(
     fun update() {
         // given
         val created = gatheringService.create(
+            memberId = testMemberId,
             name = "원래 이름",
             startDate = LocalDate.of(2025, 1, 1),
             endDate = LocalDate.of(2025, 1, 3)
@@ -92,7 +96,7 @@ class GatheringServiceTest @Autowired constructor(
         val newEndDate = LocalDate.of(2025, 2, 5)
 
         // when
-        val updated = gatheringService.update(created.id!!, newName, newStartDate, newEndDate)
+        val updated = gatheringService.update(created.id!!, testMemberId, newName, newStartDate, newEndDate)
 
         // then
         assertThat(updated.name).isEqualTo(newName)
@@ -108,7 +112,7 @@ class GatheringServiceTest @Autowired constructor(
 
         // when & then
         assertThatThrownBy {
-            gatheringService.update(nonExistentId, "이름", LocalDate.now(), LocalDate.now())
+            gatheringService.update(nonExistentId, testMemberId, "이름", LocalDate.now(), LocalDate.now())
         }
             .isInstanceOf(CoreException::class.java)
             .extracting("errorType")
@@ -120,13 +124,14 @@ class GatheringServiceTest @Autowired constructor(
     fun delete() {
         // given
         val created = gatheringService.create(
+            memberId = testMemberId,
             name = "삭제할 모임",
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
 
         // when
-        gatheringService.delete(created.id!!)
+        gatheringService.delete(created.id!!, testMemberId)
 
         // then
         assertThatThrownBy { gatheringService.findById(created.id!!) }
@@ -140,7 +145,7 @@ class GatheringServiceTest @Autowired constructor(
         val nonExistentId = 999999L
 
         // when & then
-        assertThatThrownBy { gatheringService.delete(nonExistentId) }
+        assertThatThrownBy { gatheringService.delete(nonExistentId, testMemberId) }
             .isInstanceOf(CoreException::class.java)
             .extracting("errorType")
             .isEqualTo(ErrorType.GATHERING_NOT_FOUND)
@@ -151,6 +156,7 @@ class GatheringServiceTest @Autowired constructor(
     fun existsById() {
         // given
         val created = gatheringService.create(
+            memberId = testMemberId,
             name = "모임",
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
@@ -159,5 +165,86 @@ class GatheringServiceTest @Autowired constructor(
         // when & then
         assertThat(gatheringService.existsById(created.id!!)).isTrue()
         assertThat(gatheringService.existsById(999999L)).isFalse()
+    }
+
+    @Test
+    @DisplayName("다른 회원이 모임을 수정하려 하면 예외가 발생한다")
+    fun updateByOtherMember() {
+        // given
+        val created = gatheringService.create(
+            memberId = testMemberId,
+            name = "원래 이름",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1)
+        )
+        val otherMemberId = 999L
+
+        // when & then
+        assertThatThrownBy {
+            gatheringService.update(created.id!!, otherMemberId, "수정", LocalDate.now(), LocalDate.now())
+        }
+            .isInstanceOf(CoreException::class.java)
+            .extracting("errorType")
+            .isEqualTo(ErrorType.GATHERING_ACCESS_DENIED)
+    }
+
+    @Test
+    @DisplayName("다른 회원이 모임을 삭제하려 하면 예외가 발생한다")
+    fun deleteByOtherMember() {
+        // given
+        val created = gatheringService.create(
+            memberId = testMemberId,
+            name = "삭제할 모임",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1)
+        )
+        val otherMemberId = 999L
+
+        // when & then
+        assertThatThrownBy {
+            gatheringService.delete(created.id!!, otherMemberId)
+        }
+            .isInstanceOf(CoreException::class.java)
+            .extracting("errorType")
+            .isEqualTo(ErrorType.GATHERING_ACCESS_DENIED)
+    }
+
+    @Test
+    @DisplayName("모임 소유자를 검증하고 조회할 수 있다")
+    fun findByIdAndValidateOwner() {
+        // given
+        val created = gatheringService.create(
+            memberId = testMemberId,
+            name = "모임",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1)
+        )
+
+        // when
+        val found = gatheringService.findByIdAndValidateOwner(created.id!!, testMemberId)
+
+        // then
+        assertThat(found.id).isEqualTo(created.id)
+    }
+
+    @Test
+    @DisplayName("다른 회원이 소유자 검증 조회를 하면 예외가 발생한다")
+    fun findByIdAndValidateOwnerByOtherMember() {
+        // given
+        val created = gatheringService.create(
+            memberId = testMemberId,
+            name = "모임",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1)
+        )
+        val otherMemberId = 999L
+
+        // when & then
+        assertThatThrownBy {
+            gatheringService.findByIdAndValidateOwner(created.id!!, otherMemberId)
+        }
+            .isInstanceOf(CoreException::class.java)
+            .extracting("errorType")
+            .isEqualTo(ErrorType.GATHERING_ACCESS_DENIED)
     }
 }

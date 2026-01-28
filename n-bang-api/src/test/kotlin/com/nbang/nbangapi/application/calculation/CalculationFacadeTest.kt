@@ -22,6 +22,7 @@ class CalculationFacadeTest @Autowired constructor(
     private val roundFacade: SettlementRoundFacade
 ) : IntegrationTest() {
 
+    private val testMemberId = 1L
     private var gatheringId: Long = 0L
     private var participant1Id: Long = 0L // 홍길동
     private var participant2Id: Long = 0L // 김철수
@@ -30,6 +31,7 @@ class CalculationFacadeTest @Autowired constructor(
     @BeforeEach
     fun setUp() {
         val gathering = gatheringFacade.create(
+            testMemberId,
             GatheringCreateRequest(
                 name = "제주도 여행",
                 startDate = LocalDate.of(2025, 1, 15),

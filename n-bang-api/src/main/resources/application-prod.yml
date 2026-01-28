@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: ENC(YOUR_ENCRYPTED_DB_URL)
+    driver-class-name: org.postgresql.Driver
+    username: ENC(1oTXESCJYI6D26JBaELptkH+SwaxKRaUGgZfHxyjBVdjpYx2DvuqFif/yU/bnmhD)
+    password: ENC(UGeVlajWG4xPhzj01YDKj/MB36DVZZ9mHFDy52bApaNCpsSZFfClY9fz31XifHPk)
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    open-in-view: false
+    show-sql: true
+
+  docker:
+    compose:
+      enabled: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ENC(I9Vt/qF00B9N3jbSJ3SgFaxjiLjBpSS2RYHF/GEgWfNHYXDdT7lFhm/lAohce8v2o7i4CM7HY+QRwz790qXbBYwTpi/oEJs8QYKRbVraPGU=)
+            client-secret: ENC(9EY+rybXKkD/RRD8sTPK3CojCITiPCyw8YYI+kig4sSIeTTA+B4ARSOf7SUw+A1gB5qQm+iHjZESKvcJt6bgQTZgOTdzq9zTTQjIxkF10rG7ocZ81yZj5bH7pd73u6dvKBbg+RFctA06VRssjETh3g==)
+          kakao:
+            client-id: ENC(369PVlPuFxcQ24/MqQxWJ5gHe9oyooTSFIHi6HSG8EbmIdCQ9iBva09dWlfuXrFRfCdqF716dNLN2GV1X0/2e5YFFAOYk+M4QwTy7vLh+BE=)
+            client-secret: ENC(Hy6RkuEHUcbcaY6TISB0TCC4xL2YHRorP10iq7rXvDzG3nrAGcgn1BSi5P04Zjtn2VxIRGhdqrb+FMwBUw+BHvA93SpyYMl1Fpnc38tisnc=)
+
+app:
+  oauth2:
+    authorized-redirect-uri: ENC(HOxm9NLyZk2J2BPoU03J+g/deYMF4nVsW3ZHDDS9OTBXH+qNVAfQjd9zATQrpW42hHr8bHHgvGtup4x9m92ZavKUAatwOqYljDzOpB+FxgU=)

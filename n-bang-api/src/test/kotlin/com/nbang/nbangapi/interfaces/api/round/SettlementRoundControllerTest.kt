@@ -162,6 +162,7 @@ class SettlementRoundControllerTest : E2ETest() {
         mockMvc.perform(
             multipart("/api/rounds/$roundId/image")
                 .file(file)
+                .header("Authorization", "Bearer $accessToken")
         )
             .andDo(print())
             .andExpect(status().isOk)

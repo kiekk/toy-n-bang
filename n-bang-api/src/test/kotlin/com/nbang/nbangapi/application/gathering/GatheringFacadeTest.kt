@@ -15,6 +15,8 @@ class GatheringFacadeTest @Autowired constructor(
     private val gatheringFacade: GatheringFacade
 ) : IntegrationTest() {
 
+    private val testMemberId = 1L
+
     @Test
     @DisplayName("모임을 생성할 수 있다")
     fun create() {
@@ -27,7 +29,7 @@ class GatheringFacadeTest @Autowired constructor(
         )
 
         // when
-        val response = gatheringFacade.create(request)
+        val response = gatheringFacade.create(testMemberId, request)
 
         // then
         assertThat(response.id).isNotNull()
@@ -47,10 +49,10 @@ class GatheringFacadeTest @Autowired constructor(
             endDate = LocalDate.of(2025, 1, 17),
             participantNames = listOf("홍길동", "김철수")
         )
-        val created = gatheringFacade.create(request)
+        val created = gatheringFacade.create(testMemberId, request)
 
         // when
-        val response = gatheringFacade.findById(created.id)
+        val response = gatheringFacade.findById(created.id, testMemberId)
 
         // then
         assertThat(response.id).isEqualTo(created.id)
@@ -59,10 +61,11 @@ class GatheringFacadeTest @Autowired constructor(
     }
 
     @Test
-    @DisplayName("모임 목록을 조회할 수 있다")
-    fun findAll() {
+    @DisplayName("회원별 모임 목록을 조회할 수 있다")
+    fun findAllByMemberId() {
         // given
         gatheringFacade.create(
+            testMemberId,
             GatheringCreateRequest(
                 name = "여행1",
                 startDate = LocalDate.now(),
@@ -71,6 +74,7 @@ class GatheringFacadeTest @Autowired constructor(
             )
         )
         gatheringFacade.create(
+            testMemberId,
             GatheringCreateRequest(
                 name = "여행2",
                 startDate = LocalDate.now(),
@@ -80,7 +84,7 @@ class GatheringFacadeTest @Autowired constructor(
         )
 
         // when
-        val responses = gatheringFacade.findAll()
+        val responses = gatheringFacade.findAllByMemberId(testMemberId)
 
         // then
         assertThat(responses).hasSizeGreaterThanOrEqualTo(2)
@@ -91,6 +95,7 @@ class GatheringFacadeTest @Autowired constructor(
     fun update() {
         // given
         val created = gatheringFacade.create(
+            testMemberId,
             GatheringCreateRequest(
                 name = "원래 이름",
                 startDate = LocalDate.of(2025, 1, 1),
@@ -106,7 +111,7 @@ class GatheringFacadeTest @Autowired constructor(
         )
 
         // when
-        val updated = gatheringFacade.update(created.id, updateRequest)
+        val updated = gatheringFacade.update(created.id, testMemberId, updateRequest)
 
         // then
         assertThat(updated.name).isEqualTo("수정된 이름")
@@ -119,6 +124,7 @@ class GatheringFacadeTest @Autowired constructor(
     fun delete() {
         // given
         val created = gatheringFacade.create(
+            testMemberId,
             GatheringCreateRequest(
                 name = "삭제할 모임",
                 startDate = LocalDate.now(),
@@ -128,10 +134,10 @@ class GatheringFacadeTest @Autowired constructor(
         )
 
         // when
-        gatheringFacade.delete(created.id)
+        gatheringFacade.delete(created.id, testMemberId)
 
         // then
-        assertThatThrownBy { gatheringFacade.findById(created.id) }
+        assertThatThrownBy { gatheringFacade.findById(created.id, testMemberId) }
             .isInstanceOf(CoreException::class.java)
     }
 
@@ -142,7 +148,7 @@ class GatheringFacadeTest @Autowired constructor(
         val nonExistentId = 999999L
 
         // when & then
-        assertThatThrownBy { gatheringFacade.findById(nonExistentId) }
+        assertThatThrownBy { gatheringFacade.findById(nonExistentId, testMemberId) }
             .isInstanceOf(CoreException::class.java)
     }
 }

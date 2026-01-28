@@ -14,8 +14,8 @@ class GatheringRepositoryImpl(
         return gatheringJpaRepository.save(gathering)
     }
 
-    override fun findAll(): List<Gathering> {
-        return gatheringJpaRepository.findAll()
+    override fun findAllByMemberId(memberId: Long): List<Gathering> {
+        return gatheringJpaRepository.findAllByMemberId(memberId)
     }
 
     override fun findById(id: Long): Optional<Gathering> {

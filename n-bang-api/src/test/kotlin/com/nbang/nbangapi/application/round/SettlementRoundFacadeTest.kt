@@ -22,6 +22,7 @@ class SettlementRoundFacadeTest @Autowired constructor(
     private val gatheringFacade: GatheringFacade
 ) : IntegrationTest() {
 
+    private val testMemberId = 1L
     private var gatheringId: Long = 0L
     private var participant1Id: Long = 0L
     private var participant2Id: Long = 0L
@@ -29,6 +30,7 @@ class SettlementRoundFacadeTest @Autowired constructor(
     @BeforeEach
     fun setUp() {
         val gathering = gatheringFacade.create(
+            testMemberId,
             GatheringCreateRequest(
                 name = "테스트 모임",
                 startDate = LocalDate.now(),

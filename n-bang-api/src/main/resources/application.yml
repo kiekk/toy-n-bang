@@ -1,27 +1,68 @@
+jasypt:
+  encryptor:
+    password: ${JASYPT_PASSWORD}
+    bean: jasyptStringEncryptor
+
 spring:
   application:
     name: n-bang-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/nbang
+    url: ENC(5Cy8whOqCq+dQ4Zb2sRp1ej2JBJ/KejK5Eny461lWlA4lzuV8sNSegp5ayQjChy7UYnh58VywN7l54Xe5o/uJ9/sH/ggNpffChdxINWGmC8=)
     driver-class-name: org.postgresql.Driver
-    username: nbang
-    password: nbang
+    username: ENC(9Tvsy22SQLVkXF6oLG/FPDaz8Wotx2JSY4EruCFj80GZv77quj7RLokHugDYy1Pn)
+    password: ENC(EZScw8w4C++a1Jo5z1siXf6z9CKsSGgZHKnCTQB7W8e8d8VtJplgtRUNG4hpnB5S)
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
     open-in-view: false
+    show-sql: true
 
   docker:
     compose:
       enabled: true
       lifecycle-management: start-and-stop
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ENC(lGeNlQgtr9Yal3o+CIgCsm6sDJRV7BintTRZk5+tn/fvvcweGDQ/KDmNRjFJV2NXxB4kUfXcs4LYiciD3MlIm2kC7otFZHpeH4cJBFButu/bpydqAas47Ju9jKAlxV4kYX/LxCTSwJyrK88bCbD3Yw==)
+            client-secret: ENC(CNfEZYxMHye/nzRJxHJRXrK1ZY1xV4Pi7LqbRImbmtCZRg8mZA1SG6BgFSStZoUkdV0+rvzDL2CGG3KZXXFguWmlHXhfcA7NFcL1rN0lvCA=)
+            scope:
+              - email
+              - profile
+          kakao:
+            client-id: ENC(eLDO/Qf7hSK76vf8Z22igTcnwJuqZrMsyPh61fEnJJeqVuF3Zr8iw+JKI9XMzOJZ8blvUQGIQLUYiLinvMrwUKMs2Jm9rOjzm5qEGr+lry0=)
+            client-secret: ENC(qNogVCHH57kXlp1osiC0h7r0QxnatVkpGgI/ts+R+VZlrnYkO/A3ddJQm9SlKDlNnlBBCLUOmvI/bnsmEjRaM9m+QQ55yYy58ZXSod26CBg=)
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile_nickname
+              - profile_image
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
 server:
   port: 8080
+
+jwt:
+  secret: ENC(OOv274rjupDkCFyTIrZF8qWDNUBVNDr2JiRuyY3jgvME7sMUzH0S1VSjUSqZA/ESfkGzDgJtC4BDWrbEX11UVTCvTvNt6aOCLrVZObx/V/61ixQJAPkHSd66EDJNBU6UJKEUZSlyFnWBSLUOFHZqY9/DCIcBm7VhTKZr7tAHcU0=)
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
+
+app:
+  oauth2:
+    authorized-redirect-uri: ENC(HOxm9NLyZk2J2BPoU03J+g/deYMF4nVsW3ZHDDS9OTBXH+qNVAfQjd9zATQrpW42hHr8bHHgvGtup4x9m92ZavKUAatwOqYljDzOpB+FxgU=)

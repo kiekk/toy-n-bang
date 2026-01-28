@@ -1,3 +1,7 @@
+jasypt:
+  encryptor:
+    password: test-encrypt-key
+
 spring:
   application:
     name: n-bang-api-test
@@ -18,3 +22,37 @@ spring:
   docker:
     compose:
       enabled: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
+          kakao:
+            client-id: test-kakao-client-id
+            client-secret: test-kakao-client-secret
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile_nickname
+              - profile_image
+              - account_email
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+jwt:
+  secret: dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi0yNTYtYml0LW1pbmltdW0=
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
+
+app:
+  oauth2:
+    authorized-redirect-uri: http://localhost:3000/oauth2/redirect

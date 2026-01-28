@@ -25,8 +25,9 @@ class GatheringFacade(
 ) {
 
     @Transactional
-    fun create(request: GatheringCreateRequest): GatheringResponse {
+    fun create(memberId: Long, request: GatheringCreateRequest): GatheringResponse {
         val gathering = gatheringService.create(
+            memberId = memberId,
             name = request.name,
             startDate = request.startDate,
             endDate = request.endDate
@@ -42,13 +43,13 @@ class GatheringFacade(
         )
     }
 
-    fun findAll(): List<GatheringResponse> {
-        return gatheringService.findAll()
+    fun findAllByMemberId(memberId: Long): List<GatheringResponse> {
+        return gatheringService.findAllByMemberId(memberId)
             .map { GatheringResponse.from(it) }
     }
 
-    fun findById(id: Long): GatheringResponse {
-        val gathering = gatheringService.findById(id)
+    fun findById(id: Long, memberId: Long): GatheringResponse {
+        val gathering = gatheringService.findByIdAndValidateOwner(id, memberId)
 
         val participants = participantService.findByGatheringId(id)
         val participantMap = participants.associateBy { it.id!! }
@@ -64,14 +65,14 @@ class GatheringFacade(
     }
 
     @Transactional
-    fun update(id: Long, request: GatheringUpdateRequest): GatheringResponse {
-        val gathering = gatheringService.update(id, request.name, request.startDate, request.endDate)
+    fun update(id: Long, memberId: Long, request: GatheringUpdateRequest): GatheringResponse {
+        val gathering = gatheringService.update(id, memberId, request.name, request.startDate, request.endDate)
         return GatheringResponse.from(gathering)
     }
 
     @Transactional
-    fun delete(id: Long) {
-        gatheringService.delete(id)
+    fun delete(id: Long, memberId: Long) {
+        gatheringService.delete(id, memberId)
     }
 
     private fun toRoundResponse(round: SettlementRound, participantMap: Map<Long, Participant>): RoundResponse {

@@ -10,9 +10,10 @@ class GatheringService(
     private val gatheringRepository: GatheringRepository
 ) {
 
-    fun create(name: String, startDate: LocalDate, endDate: LocalDate): Gathering {
+    fun create(memberId: Long, name: String, startDate: LocalDate, endDate: LocalDate): Gathering {
         return gatheringRepository.save(
             Gathering(
+                memberId = memberId,
                 name = name,
                 startDate = startDate,
                 endDate = endDate
@@ -25,19 +26,28 @@ class GatheringService(
             .orElseThrow { CoreException(ErrorType.GATHERING_NOT_FOUND) }
     }
 
-    fun findAll(): List<Gathering> {
-        return gatheringRepository.findAll()
+    fun findByIdAndValidateOwner(id: Long, memberId: Long): Gathering {
+        val gathering = findById(id)
+        if (!gathering.isOwnedBy(memberId)) {
+            throw CoreException(ErrorType.GATHERING_ACCESS_DENIED)
+        }
+        return gathering
     }
 
-    fun update(id: Long, name: String, startDate: LocalDate, endDate: LocalDate): Gathering {
-        val gathering = findById(id)
+    fun findAllByMemberId(memberId: Long): List<Gathering> {
+        return gatheringRepository.findAllByMemberId(memberId)
+    }
+
+    fun update(id: Long, memberId: Long, name: String, startDate: LocalDate, endDate: LocalDate): Gathering {
+        val gathering = findByIdAndValidateOwner(id, memberId)
         gathering.update(name, startDate, endDate)
         return gathering
     }
 
-    fun delete(id: Long) {
-        if (!gatheringRepository.existsById(id)) {
-            throw CoreException(ErrorType.GATHERING_NOT_FOUND)
+    fun delete(id: Long, memberId: Long) {
+        val gathering = findById(id)
+        if (!gathering.isOwnedBy(memberId)) {
+            throw CoreException(ErrorType.GATHERING_ACCESS_DENIED)
         }
         gatheringRepository.deleteById(id)
     }

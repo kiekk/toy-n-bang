@@ -17,6 +17,7 @@ class GatheringTest {
 
         // when
         val gathering = Gathering(
+            memberId = 1L,
             name = name,
             startDate = startDate,
             endDate = endDate
@@ -33,6 +34,7 @@ class GatheringTest {
     fun update() {
         // given
         val gathering = Gathering(
+            memberId = 1L,
             name = "원래 이름",
             startDate = LocalDate.of(2025, 1, 1),
             endDate = LocalDate.of(2025, 1, 3)
@@ -49,5 +51,22 @@ class GatheringTest {
         assertThat(gathering.name).isEqualTo(newName)
         assertThat(gathering.startDate).isEqualTo(newStartDate)
         assertThat(gathering.endDate).isEqualTo(newEndDate)
+    }
+
+    @Test
+    @DisplayName("모임 소유자인지 확인할 수 있다")
+    fun isOwnedBy() {
+        // given
+        val memberId = 1L
+        val gathering = Gathering(
+            memberId = memberId,
+            name = "모임",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now()
+        )
+
+        // when & then
+        assertThat(gathering.isOwnedBy(memberId)).isTrue()
+        assertThat(gathering.isOwnedBy(999L)).isFalse()
     }
 }

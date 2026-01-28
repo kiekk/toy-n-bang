@@ -11,6 +11,9 @@ class Gathering(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
+    @Column(name = "member_id", nullable = false)
+    val memberId: Long,
+
     @Column(nullable = false)
     var name: String,
 
@@ -26,4 +29,6 @@ class Gathering(
         this.startDate = startDate
         this.endDate = endDate
     }
+
+    fun isOwnedBy(memberId: Long): Boolean = this.memberId == memberId
 }

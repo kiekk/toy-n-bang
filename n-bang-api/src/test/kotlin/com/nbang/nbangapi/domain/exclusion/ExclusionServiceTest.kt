@@ -19,16 +19,20 @@ class ExclusionServiceTest @Autowired constructor(
     private val gatheringService: GatheringService
 ) : IntegrationTest() {
 
+    private val testMemberId = 1L
+    private var gatheringId: Long = 0L
     private var roundId: Long = 0L
     private var participantId: Long = 0L
 
     @BeforeEach
     fun setUp() {
         val gathering = gatheringService.create(
+            memberId = testMemberId,
             name = "테스트 모임",
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
+        gatheringId = gathering.id!!
 
         val participant = participantService.create("홍길동", gathering.id!!)
         participantId = participant.id!!
@@ -57,7 +61,7 @@ class ExclusionServiceTest @Autowired constructor(
     @DisplayName("라운드별 제외 목록을 조회할 수 있다")
     fun findByRoundId() {
         // given
-        val participant2 = participantService.create("김철수", gatheringService.findAll().first().id!!)
+        val participant2 = participantService.create("김철수", gatheringId)
         exclusionService.create("술 안마심", participantId, roundId)
         exclusionService.create("먼저 귀가", participant2.id!!, roundId)
 

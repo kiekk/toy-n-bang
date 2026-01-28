@@ -20,12 +20,14 @@ class SettlementRoundServiceTest @Autowired constructor(
     private val participantService: ParticipantService
 ) : IntegrationTest() {
 
+    private val testMemberId = 1L
     private var gatheringId: Long = 0L
     private var payerId: Long = 0L
 
     @BeforeEach
     fun setUp() {
         val gathering = gatheringService.create(
+            memberId = testMemberId,
             name = "테스트 모임",
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
