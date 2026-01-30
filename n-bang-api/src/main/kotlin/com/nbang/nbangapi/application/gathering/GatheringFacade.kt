@@ -45,7 +45,19 @@ class GatheringFacade(
 
     fun findAllByMemberId(memberId: Long): List<GatheringResponse> {
         return gatheringService.findAllByMemberId(memberId)
-            .map { GatheringResponse.from(it) }
+            .map { gathering ->
+                val participants = participantService.findByGatheringId(gathering.id!!)
+                val participantMap = participants.associateBy { it.id!! }
+
+                val rounds = roundService.findByGatheringId(gathering.id!!)
+                val roundResponses = rounds.map { toRoundResponse(it, participantMap) }
+
+                GatheringResponse.from(
+                    gathering = gathering,
+                    participants = participants.map { ParticipantResponse.from(it) },
+                    rounds = roundResponses
+                )
+            }
     }
 
     fun findById(id: Long, memberId: Long): GatheringResponse {
@@ -67,7 +79,18 @@ class GatheringFacade(
     @Transactional
     fun update(id: Long, memberId: Long, request: GatheringUpdateRequest): GatheringResponse {
         val gathering = gatheringService.update(id, memberId, request.name, request.startDate, request.endDate)
-        return GatheringResponse.from(gathering)
+
+        val participants = participantService.findByGatheringId(id)
+        val participantMap = participants.associateBy { it.id!! }
+
+        val rounds = roundService.findByGatheringId(id)
+        val roundResponses = rounds.map { toRoundResponse(it, participantMap) }
+
+        return GatheringResponse.from(
+            gathering = gathering,
+            participants = participants.map { ParticipantResponse.from(it) },
+            rounds = roundResponses
+        )
     }
 
     @Transactional
