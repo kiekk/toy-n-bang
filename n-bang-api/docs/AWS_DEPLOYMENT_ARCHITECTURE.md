@@ -27,8 +27,8 @@
 │  ┌───────────────────────────────────────────────────────────────────────────────────┐  │
 │  │                              Frontend Flow                                         │  │
 │  │                                                                                    │  │
-│  │   GitHub ─────▶ GitHub Actions ─────▶ S3 ─────▶ CloudFront ◀───── Route 53       │  │
-│  │   (front-live)    (Build & Deploy)   (Static)    (CDN+SSL)        (Domain)        │  │
+│  │   GitHub ─────▶ Vercel ─────▶ CDN + SSL ◀───── Route 53                          │  │
+│  │   (main)         (Auto Build & Deploy)          (Custom Domain)                   │  │
 │  │                                                                                    │  │
 │  └───────────────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                         │
@@ -70,7 +70,7 @@
 
 | 레이어 | 기술 |
 |--------|------|
-| **Frontend** | React/Vue + S3 + CloudFront |
+| **Frontend** | React/Vue + Vercel + Route 53 |
 | **Backend** | Spring Boot 4.0.1 + Kotlin + Java 21 |
 | **Database** | PostgreSQL 16 (RDS) |
 | **Container** | Docker + Docker Compose |
@@ -115,60 +115,98 @@ VPC (10.0.0.0/16)
 
 ---
 
-## 3. Frontend 배포
+## 3. Frontend 배포 (Vercel + Route 53)
 
 ### 구성 요소
 
 | 서비스 | 역할 | 설정 |
 |--------|------|------|
-| **Route 53** | DNS 관리 | Hosted Zone + A Record (Alias) |
-| **ACM** | SSL 인증서 | CloudFront용 (us-east-1 리전 필수) |
-| **CloudFront** | CDN | S3 Origin, HTTPS 강제, Gzip 압축 |
-| **S3** | 정적 파일 호스팅 | Private bucket + OAC |
+| **Vercel** | 호스팅 + CDN + SSL | GitHub 연동, 자동 배포 |
+| **Route 53** | DNS 관리 | Hosted Zone + CNAME/A Record |
 
-### CloudFront 설정
+### Vercel 장점
 
-```yaml
-Origins:
-  - S3 Bucket (OAC로 접근)
+- **Zero Config**: GitHub 연동만으로 자동 빌드/배포
+- **글로벌 CDN**: Edge Network로 전 세계 빠른 응답
+- **자동 SSL**: Let's Encrypt 인증서 자동 발급/갱신
+- **Preview Deployments**: PR마다 자동 프리뷰 URL 생성
+- **무료 티어**: 개인 프로젝트에 충분한 무료 사용량
 
-Behaviors:
-  - Default (*):
-      ViewerProtocolPolicy: redirect-to-https
-      CachePolicyId: CachingOptimized
-      Compress: true
-      TTL: 86400 (1일)
+### Vercel 프로젝트 설정
 
-  - /index.html:
-      CachePolicyId: CachingDisabled (또는 짧은 TTL)
-
-ErrorPages:
-  - 403 → /index.html (SPA 라우팅 지원)
-  - 404 → /index.html
+```
+1. Vercel 회원가입 (GitHub 계정 연동)
+2. "New Project" → GitHub 저장소 Import
+3. Framework Preset: 자동 감지 (React, Vue, Next.js 등)
+4. Build Settings:
+   - Build Command: npm run build (또는 자동 감지)
+   - Output Directory: dist (또는 build, .next 등)
+5. Environment Variables 설정:
+   - VITE_API_URL: https://api.your-domain.com
 ```
 
-### S3 버킷 정책
+### Route 53 도메인 연동
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "AllowCloudFrontOAC",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "cloudfront.amazonaws.com"
-      },
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::your-frontend-bucket/*",
-      "Condition": {
-        "StringEquals": {
-          "AWS:SourceArn": "arn:aws:cloudfront::ACCOUNT_ID:distribution/DISTRIBUTION_ID"
-        }
-      }
-    }
-  ]
-}
+#### 1단계: Vercel에서 도메인 추가
+
+```
+Vercel Dashboard → Project → Settings → Domains
+→ "Add Domain" → your-domain.com 입력
+```
+
+#### 2단계: Route 53 DNS 설정
+
+```
+Route 53 → Hosted Zones → your-domain.com
+
+# A Record (루트 도메인)
+┌─────────────────────────────────────────────────────────┐
+│ Record name: your-domain.com                            │
+│ Record type: A                                          │
+│ Value: 76.76.21.21  (Vercel IP)                        │
+│ TTL: 300                                                │
+└─────────────────────────────────────────────────────────┘
+
+# CNAME Record (www 서브도메인)
+┌─────────────────────────────────────────────────────────┐
+│ Record name: www.your-domain.com                        │
+│ Record type: CNAME                                      │
+│ Value: cname.vercel-dns.com                            │
+│ TTL: 300                                                │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### Vercel DNS 레코드 (참고)
+
+| 레코드 타입 | 호스트 | 값 |
+|------------|--------|-----|
+| A | @ (루트) | 76.76.21.21 |
+| CNAME | www | cname.vercel-dns.com |
+
+### 배포 흐름
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Vercel 자동 배포 흐름                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    Developer              GitHub                 Vercel
+        │                     │                      │
+        │  git push           │                      │
+        │ ───────────────────▶│                      │
+        │                     │   Webhook Trigger    │
+        │                     │ ────────────────────▶│
+        │                     │                      │  1. Clone repo
+        │                     │                      │  2. Install deps
+        │                     │                      │  3. Build
+        │                     │                      │  4. Deploy to CDN
+        │                     │                      │
+        │                     │◀──── Deploy URL ─────│
+        │◀── Notification ────│                      │
+        │                     │                      │
+
+Production: main 브랜치 push → 자동 배포
+Preview: PR 생성 → 프리뷰 URL 자동 생성
 ```
 
 ---
@@ -583,14 +621,14 @@ logging:
 }
 ```
 
-#### GitHub Actions IAM User
+#### GitHub Actions IAM User (Backend 배포용)
 
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "S3DeployAccess",
+      "Sid": "S3CodeDeployAccess",
       "Effect": "Allow",
       "Action": [
         "s3:PutObject",
@@ -599,19 +637,9 @@ logging:
         "s3:ListBucket"
       ],
       "Resource": [
-        "arn:aws:s3:::your-frontend-bucket",
-        "arn:aws:s3:::your-frontend-bucket/*",
         "arn:aws:s3:::your-codedeploy-bucket",
         "arn:aws:s3:::your-codedeploy-bucket/*"
       ]
-    },
-    {
-      "Sid": "CloudFrontAccess",
-      "Effect": "Allow",
-      "Action": [
-        "cloudfront:CreateInvalidation"
-      ],
-      "Resource": "*"
     },
     {
       "Sid": "CodeDeployAccess",
@@ -633,7 +661,7 @@ logging:
 
 ## 6. GitHub Actions CI/CD
 
-### GitHub Secrets 설정
+### GitHub Secrets 설정 (Backend 저장소)
 
 ```
 Repository Settings > Secrets and variables > Actions
@@ -644,12 +672,12 @@ Repository Settings > Secrets and variables > Actions
 │  AWS_ACCESS_KEY_ID          │ AKIA...                   │
 │  AWS_SECRET_ACCESS_KEY      │ xxxxx...                  │
 │  AWS_REGION                 │ ap-northeast-2            │
-│  S3_BUCKET_FRONTEND         │ your-frontend-bucket      │
 │  S3_BUCKET_CODEDEPLOY       │ your-codedeploy-bucket    │
-│  CLOUDFRONT_DISTRIBUTION_ID │ EXXXXXXXXXX               │
 │  CODEDEPLOY_APP_NAME        │ n-bang-api                │
 │  CODEDEPLOY_GROUP_NAME      │ n-bang-api-group          │
 └─────────────────────────────────────────────────────────┘
+
+※ Frontend는 Vercel에서 자동 배포되므로 별도 설정 불필요
 ```
 
 ### Backend: deploy-backend.yml
@@ -729,66 +757,47 @@ jobs:
             --description "Deployment from GitHub Actions - ${{ github.sha }}"
 ```
 
-### Frontend: deploy-frontend.yml
+### Frontend: Vercel 자동 배포
 
-```yaml
-name: Deploy Frontend
+> **Note**: Frontend는 Vercel에서 자동 배포됩니다. GitHub Actions 워크플로우가 필요 없습니다.
 
-on:
-  push:
-    branches:
-      - front-live
+#### Vercel 환경 변수 설정
 
-env:
-  AWS_REGION: ap-northeast-2
+```
+Vercel Dashboard → Project → Settings → Environment Variables
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+┌─────────────────────────────────────────────────────────┐
+│                 Environment Variables                    │
+├─────────────────────────────────────────────────────────┤
+│  VITE_API_URL     │ https://api.your-domain.com         │
+│  (필요한 경우 추가 환경변수...)                           │
+└─────────────────────────────────────────────────────────┘
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+Environment: Production, Preview, Development 별도 설정 가능
+```
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+#### 배포 트리거
 
-      - name: Install dependencies
-        run: npm ci
+| 이벤트 | 동작 |
+|--------|------|
+| `main` 브랜치 push | Production 배포 |
+| PR 생성/업데이트 | Preview 배포 (고유 URL 생성) |
+| PR 머지 | Production 배포 |
 
-      - name: Build
-        run: npm run build
-        env:
-          VITE_API_URL: https://api.your-domain.com
+#### Vercel CLI (선택사항)
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+```bash
+# Vercel CLI 설치
+npm i -g vercel
 
-      - name: Deploy to S3
-        run: |
-          # 정적 파일 (긴 캐시)
-          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_FRONTEND }} \
-            --delete \
-            --cache-control "public, max-age=31536000, immutable" \
-            --exclude "index.html" \
-            --exclude "*.json"
+# 프로젝트 연결
+vercel link
 
-          # index.html (캐시 없음)
-          aws s3 cp dist/index.html s3://${{ secrets.S3_BUCKET_FRONTEND }}/index.html \
-            --cache-control "no-cache, no-store, must-revalidate"
+# 수동 배포 (개발용)
+vercel
 
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/index.html"
+# Production 배포
+vercel --prod
 ```
 
 ---
@@ -1020,7 +1029,7 @@ Resources:
 
 ## 8. 월별 비용 추산
 
-### 선택된 구성 (CodeDeploy In-Place)
+### 선택된 구성 (Backend: CodeDeploy In-Place + Frontend: Vercel)
 
 | 서비스 | 사양 | 월 비용 (USD) |
 |--------|------|---------------|
@@ -1028,8 +1037,8 @@ Resources:
 | **EBS** | gp3 30GB | ~$2.40 |
 | **RDS PostgreSQL** | db.t3.micro (1 vCPU, 1GB) | ~$15.00 |
 | **RDS Storage** | gp2 20GB | ~$2.30 |
-| **S3** | Frontend 1GB + Artifacts | ~$0.50 |
-| **CloudFront** | 10GB 전송/월 | ~$0.85 |
+| **S3** | CodeDeploy Artifacts only | ~$0.10 |
+| **Vercel** | Hobby Plan (Frontend) | 무료 |
 | **Secrets Manager** | 1개 시크릿 | ~$0.40 |
 | **Route 53** | Hosted Zone 1개 | $0.50 |
 | **CodeDeploy** | - | 무료 |
@@ -1037,15 +1046,23 @@ Resources:
 | **Data Transfer** | EC2 → Internet 10GB | ~$0.90 |
 | **도메인** | .com (연간 ~$12) | ~$1.00 |
 | | | |
-| **합계** | | **~$41/월** |
+| **합계** | | **~$40/월** |
 
 ### 대안별 비용
 
 | 구성 | 월 비용 |
 |------|---------|
-| CodeDeploy In-Place (선택됨) | ~$41/월 |
-| Nginx Blue-Green | ~$41/월 (동일) |
-| CodeDeploy Blue-Green + ALB | ~$59/월 (+$18) |
+| CodeDeploy In-Place + Vercel (선택됨) | ~$40/월 |
+| Nginx Blue-Green + Vercel | ~$40/월 (동일) |
+| CodeDeploy Blue-Green + ALB + Vercel | ~$58/월 (+$18) |
+
+### Vercel 요금제 참고
+
+| 플랜 | 가격 | 특징 |
+|------|------|------|
+| **Hobby** | 무료 | 개인 프로젝트, 100GB 대역폭/월 |
+| **Pro** | $20/월 | 상업용, 1TB 대역폭, 팀 기능 |
+| **Enterprise** | 문의 | 무제한, SLA, 전담 지원 |
 
 ---
 
@@ -1083,25 +1100,27 @@ CodeDeploy 설정
 [ ] 16. Deployment Group 생성
 [ ] 17. S3 버킷 생성 (배포 아티팩트용)
 
-Frontend 설정
+Frontend 설정 (Vercel)
 ────────────────
-[ ] 18. S3 버킷 생성 (정적 호스팅용)
-[ ] 19. ACM 인증서 발급 (us-east-1)
-[ ] 20. CloudFront 배포 생성
-[ ] 21. S3 버킷 정책 설정 (OAC)
+[ ] 18. Vercel 프로젝트 생성 (GitHub 저장소 연동)
+[ ] 19. Vercel 환경 변수 설정 (VITE_API_URL 등)
+[ ] 20. Vercel에 커스텀 도메인 추가
 
 DNS 설정
 ────────────────
-[ ] 22. Route 53 Hosted Zone 생성
-[ ] 23. A Record 설정 (Frontend → CloudFront)
+[ ] 21. Route 53 Hosted Zone 생성
+[ ] 22. A Record 설정 (Frontend → Vercel: 76.76.21.21)
+[ ] 23. CNAME Record 설정 (www → cname.vercel-dns.com)
 [ ] 24. A Record 설정 (API → EC2 Elastic IP)
 
-CI/CD 설정
+CI/CD 설정 (Backend만)
 ────────────────
-[ ] 25. IAM User 생성 (GitHub Actions용)
-[ ] 26. GitHub Secrets 설정
-[ ] 27. GitHub Actions 워크플로우 파일 커밋
-[ ] 28. 브랜치 생성 (front-live, backend-live)
+[ ] 25. IAM User 생성 (GitHub Actions용 - Backend)
+[ ] 26. GitHub Secrets 설정 (Backend 저장소)
+[ ] 27. GitHub Actions 워크플로우 파일 커밋 (Backend)
+[ ] 28. 브랜치 생성 (backend-live)
+
+※ Frontend는 Vercel이 자동으로 main 브랜치 push 시 배포
 ```
 
 ### EC2 초기 설정 스크립트
@@ -1145,16 +1164,21 @@ mkdir -p /home/ec2-user/n-bang
 ### 배포 테스트
 
 ```bash
-# Backend 배포 트리거
+# Backend 배포 트리거 (AWS CodeDeploy)
 git checkout -b backend-live
 git push origin backend-live
 
-# Frontend 배포 트리거
-git checkout -b front-live
-git push origin front-live
-
-# 배포 상태 확인
+# Backend 배포 상태 확인
 aws deploy get-deployment --deployment-id d-XXXXXXXXX
+
+# Frontend 배포 (Vercel - 자동)
+# main 브랜치에 push하면 자동 배포됨
+git checkout main
+git push origin main
+
+# Vercel 배포 상태 확인
+# - Vercel Dashboard에서 확인
+# - 또는 Vercel CLI: vercel ls
 ```
 
 ---
@@ -1926,13 +1950,15 @@ groups:
 | **EBS** | gp3 50GB (로그/메트릭 저장) | ~$4.00 |
 | **RDS PostgreSQL** | db.t3.micro | ~$15.00 |
 | **RDS Storage** | gp2 20GB | ~$2.30 |
-| **S3 + CloudFront** | 동일 | ~$1.35 |
+| **S3** | CodeDeploy Artifacts | ~$0.10 |
+| **Vercel** | Frontend (Hobby) | 무료 |
 | **기타** | Route 53, Secrets Manager 등 | ~$2.40 |
 | **도메인** | .com | ~$1.00 |
 | | | |
-| **합계** | | **~$60/월** |
+| **합계** | | **~$59/월** |
 
 > 기존 대비 **+$19/월** 증가 (EC2 업그레이드 + EBS 증가)
+> Frontend는 Vercel 무료 플랜 사용
 
 ---
 
