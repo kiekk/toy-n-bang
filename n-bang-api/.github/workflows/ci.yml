@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
     branches:
-      - develop
+      - develop-back
 
 env:
   AWS_REGION: ap-northeast-2
