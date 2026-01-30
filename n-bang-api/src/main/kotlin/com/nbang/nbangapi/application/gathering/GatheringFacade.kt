@@ -29,6 +29,7 @@ class GatheringFacade(
         val gathering = gatheringService.create(
             memberId = memberId,
             name = request.name,
+            type = request.type,
             startDate = request.startDate,
             endDate = request.endDate
         )
@@ -78,7 +79,7 @@ class GatheringFacade(
 
     @Transactional
     fun update(id: Long, memberId: Long, request: GatheringUpdateRequest): GatheringResponse {
-        val gathering = gatheringService.update(id, memberId, request.name, request.startDate, request.endDate)
+        val gathering = gatheringService.update(id, memberId, request.name, request.type, request.startDate, request.endDate)
 
         val participants = participantService.findByGatheringId(id)
         val participantMap = participants.associateBy { it.id!! }
