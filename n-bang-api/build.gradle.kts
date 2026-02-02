@@ -1,3 +1,4 @@
+// N-Bang API Build Configuration
 plugins {
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.spring") version "2.1.0"
