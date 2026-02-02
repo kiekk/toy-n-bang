@@ -12,6 +12,9 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: n-bang-api
 
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +34,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: n-bang-api
 
     services:
       postgres:
@@ -73,11 +79,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: build/reports/tests/
+          path: n-bang-api/build/reports/tests/
 
   build-image:
     needs: [lint, test]
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: n-bang-api
 
     steps:
       - uses: actions/checkout@v4
