@@ -1,6 +1,7 @@
 #!/bin/bash
 
 AWS_REGION="ap-northeast-2"
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 IMAGE_NAME="n-bang-api"
 CONTAINER_NAME="n-bang-api"
@@ -17,7 +18,6 @@ docker run -d \
     --restart unless-stopped \
     -p 8080:8080 \
     -e SPRING_PROFILES_ACTIVE=prod \
-    -e JASYPT_ENCRYPTOR_PASSWORD="${JASYPT_PASSWORD}" \
     $ECR_REGISTRY/$IMAGE_NAME:latest
 
 echo "Container $CONTAINER_NAME started successfully"

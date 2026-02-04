@@ -8,6 +8,8 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  ECR_REPOSITORY: n-bang-api
   S3_BUCKET: n-bang-deploy
   CODE_DEPLOY_APP: n-bang-app
   CODE_DEPLOY_GROUP: n-bang-api-group
@@ -29,6 +31,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -42,13 +48,19 @@ jobs:
       - name: Build JAR
         run: ./gradlew bootJar -x test
 
+      - name: Build and Push Docker image to ECR
+        run: |
+          docker build -t ${{ env.ECR_REPOSITORY }} .
+          docker tag ${{ env.ECR_REPOSITORY }}:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+          docker tag ${{ env.ECR_REPOSITORY }}:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
       - name: Prepare deployment package
         run: |
           mkdir -p deploy
-          cp build/libs/*.jar deploy/app.jar
           cp appspec.yml deploy/
           cp -r scripts deploy/
-          cp Dockerfile deploy/
           cd deploy && zip -r ../deploy.zip .
 
       - name: Upload to S3
