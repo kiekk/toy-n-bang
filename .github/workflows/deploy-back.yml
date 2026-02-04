@@ -10,9 +10,7 @@ env:
   AWS_REGION: ap-northeast-2
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   ECR_REPOSITORY: n-bang/n-bang-api
-  S3_BUCKET: n-bang-deploy
-  CODE_DEPLOY_APP: n-bang-app
-  CODE_DEPLOY_GROUP: n-bang-api-group
+  EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
 
 jobs:
   deploy:
@@ -56,22 +54,16 @@ jobs:
           docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
           docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
-      - name: Prepare deployment package
+      - name: Deploy to EC2 via SSM
         run: |
-          mkdir -p deploy
-          cp appspec.yml deploy/
-          cp -r scripts deploy/
-          cd deploy && zip -r ../deploy.zip .
-
-      - name: Upload to S3
-        run: |
-          aws s3 cp deploy.zip s3://${{ env.S3_BUCKET }}/n-bang-api/${{ github.sha }}.zip
-
-      - name: Deploy to EC2 via CodeDeploy
-        run: |
-          aws deploy create-deployment \
-            --application-name ${{ env.CODE_DEPLOY_APP }} \
-            --deployment-group-name ${{ env.CODE_DEPLOY_GROUP }} \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --s3-location bucket=${{ env.S3_BUCKET }},key=n-bang-api/${{ github.sha }}.zip,bundleType=zip \
-            --description "Deployment from GitHub Actions - ${{ github.sha }}"
+          aws ssm send-command \
+            --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com",
+              "docker pull ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest",
+              "docker stop n-bang-api || true",
+              "docker rm n-bang-api || true",
+              "docker run -d --name n-bang-api --restart unless-stopped -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest"
+            ]' \
+            --output text
