@@ -3,7 +3,7 @@
 AWS_REGION="ap-northeast-2"
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-IMAGE_NAME="n-bang-api"
+IMAGE_NAME="n-bang/n-bang-api"
 CONTAINER_NAME="n-bang-api"
 
 # ECR 로그인

@@ -9,7 +9,7 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  ECR_REPOSITORY: n-bang-api
+  ECR_REPOSITORY: n-bang/n-bang-api
   S3_BUCKET: n-bang-deploy
   CODE_DEPLOY_APP: n-bang-app
   CODE_DEPLOY_GROUP: n-bang-api-group
