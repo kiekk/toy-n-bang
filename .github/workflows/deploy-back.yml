@@ -16,6 +16,9 @@ jobs:
   deploy:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: n-bang-api
 
     steps:
       - uses: actions/checkout@v4
@@ -36,11 +39,9 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        working-directory: n-bang-api
 
       - name: Build JAR
         run: ./gradlew bootJar -x test
-        working-directory: n-bang-api
         env:
           JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_PASSWORD }}
 
@@ -51,12 +52,10 @@ jobs:
           cp appspec.yml deploy/
           cp -r scripts deploy/
           cd deploy && zip -r ../deploy.zip .
-        working-directory: n-bang-api
 
       - name: Upload to S3
         run: |
           aws s3 cp deploy.zip s3://${{ env.S3_BUCKET }}/n-bang-api/${{ github.sha }}.zip
-        working-directory: n-bang-api
 
       - name: Deploy to EC2 via CodeDeploy
         run: |
