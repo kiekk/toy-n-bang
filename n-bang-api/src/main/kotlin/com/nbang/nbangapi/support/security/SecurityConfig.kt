@@ -38,6 +38,7 @@ class SecurityConfig(
                 auth
                     // Public endpoints
                     .requestMatchers("/", "/error").permitAll()
+                    .requestMatchers("/health").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/oauth2/**", "/login/**").permitAll()
                     .requestMatchers("/api/v1/auth/**").permitAll()
