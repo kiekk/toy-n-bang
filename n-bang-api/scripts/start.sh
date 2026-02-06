@@ -6,6 +6,9 @@ JAR_FILE="$APP_HOME/app.jar"
 PID_FILE="$APP_HOME/app.pid"
 LOG_FILE="$APP_HOME/app.log"
 
+# 작업 디렉토리 이동
+cd "$APP_HOME" || exit 1
+
 # 환경변수 로드
 if [ -f /etc/profile.d/nbang-env.sh ]; then
     source /etc/profile.d/nbang-env.sh
@@ -23,15 +26,18 @@ if [ -z "$JASYPT_PASSWORD" ]; then
     exit 1
 fi
 
-# 로그 디렉토리 생성
+# 로그 디렉토리 생성 및 권한 설정
+echo "Creating log directories..."
 mkdir -p "$APP_HOME/logs/archive"
-chmod 755 "$APP_HOME/logs"
+chown -R ec2-user:ec2-user "$APP_HOME/logs"
+chmod -R 755 "$APP_HOME/logs"
 
 # 애플리케이션 시작
 echo "Starting $APP_NAME..."
 nohup java -jar \
     -Dspring.profiles.active=prod \
     -Djasypt.encryptor.password="${JASYPT_PASSWORD}" \
+    -Dlogging.file.path="$APP_HOME/logs" \
     "$JAR_FILE" \
     > "$LOG_FILE" 2>&1 &
 
