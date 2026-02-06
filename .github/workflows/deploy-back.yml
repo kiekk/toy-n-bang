@@ -3,7 +3,7 @@ name: Deploy Backend
 on:
   pull_request:
     branches:
-      - backend-deploy
+      - deploy-back
     types: [closed]
 
 env:
