@@ -5,6 +5,7 @@ on:
     branches:
       - deploy-back
     types: [closed]
+  workflow_dispatch:  # 수동 실행 가능
 
 env:
   AWS_REGION: ap-northeast-2
