@@ -35,6 +35,10 @@ chmod -R 755 "$APP_HOME/logs"
 # 애플리케이션 시작
 echo "Starting $APP_NAME..."
 nohup java -jar \
+    -Xms256m \
+    -Xmx512m \
+    -XX:MaxMetaspaceSize=256m \
+    -XX:+UseG1GC \
     -Dspring.profiles.active=prod \
     -Djasypt.encryptor.password="${JASYPT_PASSWORD}" \
     -Dlogging.file.path="$APP_HOME/logs" \
