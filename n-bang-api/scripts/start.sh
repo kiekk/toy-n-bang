@@ -23,6 +23,10 @@ if [ -z "$JASYPT_PASSWORD" ]; then
     exit 1
 fi
 
+# 로그 디렉토리 생성
+mkdir -p "$APP_HOME/logs/archive"
+chmod 755 "$APP_HOME/logs"
+
 # 애플리케이션 시작
 echo "Starting $APP_NAME..."
 nohup java -jar \
