@@ -12,6 +12,7 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     show-sql: true
 
