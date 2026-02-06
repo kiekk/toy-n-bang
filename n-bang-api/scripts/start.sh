@@ -6,6 +6,11 @@ JAR_FILE="$APP_HOME/app.jar"
 PID_FILE="$APP_HOME/app.pid"
 LOG_FILE="$APP_HOME/app.log"
 
+# 환경변수 로드
+if [ -f /etc/profile.d/nbang-env.sh ]; then
+    source /etc/profile.d/nbang-env.sh
+fi
+
 # JAR 파일 존재 확인
 if [ ! -f "$JAR_FILE" ]; then
     echo "Error: JAR file not found at $JAR_FILE"
@@ -14,7 +19,8 @@ fi
 
 # 환경변수 확인
 if [ -z "$JASYPT_PASSWORD" ]; then
-    echo "Warning: JASYPT_PASSWORD not set"
+    echo "Error: JASYPT_PASSWORD not set"
+    exit 1
 fi
 
 # 애플리케이션 시작
