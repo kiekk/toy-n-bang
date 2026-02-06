@@ -1,6 +1,5 @@
 package com.nbang.nbangapi.support.security
 
-import com.nbang.nbangapi.support.IntegrationTest
 import com.nbang.nbangapi.support.error.CoreException
 import com.nbang.nbangapi.support.error.ErrorType
 import io.jsonwebtoken.Jwts
@@ -8,16 +7,25 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import java.util.*
 
-class JwtTokenProviderTest @Autowired constructor(
-    private val jwtTokenProvider: JwtTokenProvider,
-    @Value("\${jwt.secret}") private val secret: String,
-) : IntegrationTest() {
+class JwtTokenProviderTest {
+
+    private lateinit var jwtTokenProvider: JwtTokenProvider
+    private val secret = "dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi0yNTYtYml0LW1pbmltdW0="
+
+    @BeforeEach
+    fun setUp() {
+        val jwtProperties = JwtProperties(
+            secret = secret,
+            accessTokenExpiration = 3600000,
+            refreshTokenExpiration = 604800000
+        )
+        jwtTokenProvider = JwtTokenProvider(jwtProperties)
+    }
 
     private fun createExpiredToken(memberId: Long): String {
         val key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret))
