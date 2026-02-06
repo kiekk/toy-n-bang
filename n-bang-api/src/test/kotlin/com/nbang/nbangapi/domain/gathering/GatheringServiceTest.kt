@@ -21,15 +21,17 @@ class GatheringServiceTest @Autowired constructor(
     fun create() {
         // given
         val name = "제주도 여행"
+        val type = GatheringType.TRAVEL
         val startDate = LocalDate.of(2025, 1, 15)
         val endDate = LocalDate.of(2025, 1, 17)
 
         // when
-        val gathering = gatheringService.create(testMemberId, name, startDate, endDate)
+        val gathering = gatheringService.create(testMemberId, name, type, startDate, endDate)
 
         // then
         assertThat(gathering.id).isNotNull()
         assertThat(gathering.name).isEqualTo(name)
+        assertThat(gathering.type).isEqualTo(type)
         assertThat(gathering.startDate).isEqualTo(startDate)
         assertThat(gathering.endDate).isEqualTo(endDate)
     }
@@ -41,6 +43,7 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "제주도 여행",
+            type = GatheringType.TRAVEL,
             startDate = LocalDate.of(2025, 1, 15),
             endDate = LocalDate.of(2025, 1, 17)
         )
@@ -51,6 +54,7 @@ class GatheringServiceTest @Autowired constructor(
         // then
         assertThat(found.id).isEqualTo(created.id)
         assertThat(found.name).isEqualTo(created.name)
+        assertThat(found.type).isEqualTo(created.type)
     }
 
     @Test
@@ -70,8 +74,8 @@ class GatheringServiceTest @Autowired constructor(
     @DisplayName("회원별 모임 목록을 조회할 수 있다")
     fun findAllByMemberId() {
         // given
-        gatheringService.create(testMemberId, "여행1", LocalDate.now(), LocalDate.now().plusDays(1))
-        gatheringService.create(testMemberId, "여행2", LocalDate.now(), LocalDate.now().plusDays(2))
+        gatheringService.create(testMemberId, "여행1", GatheringType.TRAVEL, LocalDate.now(), LocalDate.now().plusDays(1))
+        gatheringService.create(testMemberId, "여행2", GatheringType.DINING, LocalDate.now(), LocalDate.now().plusDays(2))
 
         // when
         val gatherings = gatheringService.findAllByMemberId(testMemberId)
@@ -87,19 +91,22 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "원래 이름",
+            type = GatheringType.TRAVEL,
             startDate = LocalDate.of(2025, 1, 1),
             endDate = LocalDate.of(2025, 1, 3)
         )
 
         val newName = "수정된 이름"
+        val newType = GatheringType.DINING
         val newStartDate = LocalDate.of(2025, 2, 1)
         val newEndDate = LocalDate.of(2025, 2, 5)
 
         // when
-        val updated = gatheringService.update(created.id!!, testMemberId, newName, newStartDate, newEndDate)
+        val updated = gatheringService.update(created.id!!, testMemberId, newName, newType, newStartDate, newEndDate)
 
         // then
         assertThat(updated.name).isEqualTo(newName)
+        assertThat(updated.type).isEqualTo(newType)
         assertThat(updated.startDate).isEqualTo(newStartDate)
         assertThat(updated.endDate).isEqualTo(newEndDate)
     }
@@ -112,7 +119,7 @@ class GatheringServiceTest @Autowired constructor(
 
         // when & then
         assertThatThrownBy {
-            gatheringService.update(nonExistentId, testMemberId, "이름", LocalDate.now(), LocalDate.now())
+            gatheringService.update(nonExistentId, testMemberId, "이름", GatheringType.OTHER, LocalDate.now(), LocalDate.now())
         }
             .isInstanceOf(CoreException::class.java)
             .extracting("errorType")
@@ -126,6 +133,7 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "삭제할 모임",
+            type = GatheringType.MEETING,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
@@ -158,6 +166,7 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "모임",
+            type = GatheringType.HOBBY,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
@@ -174,6 +183,7 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "원래 이름",
+            type = GatheringType.TRAVEL,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
@@ -181,7 +191,7 @@ class GatheringServiceTest @Autowired constructor(
 
         // when & then
         assertThatThrownBy {
-            gatheringService.update(created.id!!, otherMemberId, "수정", LocalDate.now(), LocalDate.now())
+            gatheringService.update(created.id!!, otherMemberId, "수정", GatheringType.OTHER, LocalDate.now(), LocalDate.now())
         }
             .isInstanceOf(CoreException::class.java)
             .extracting("errorType")
@@ -195,6 +205,7 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "삭제할 모임",
+            type = GatheringType.DATE,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
@@ -216,6 +227,7 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "모임",
+            type = GatheringType.CEREMONY,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
@@ -234,6 +246,7 @@ class GatheringServiceTest @Autowired constructor(
         val created = gatheringService.create(
             memberId = testMemberId,
             name = "모임",
+            type = GatheringType.OTHER,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )

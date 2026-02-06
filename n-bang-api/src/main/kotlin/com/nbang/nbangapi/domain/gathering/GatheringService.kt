@@ -10,11 +10,12 @@ class GatheringService(
     private val gatheringRepository: GatheringRepository
 ) {
 
-    fun create(memberId: Long, name: String, startDate: LocalDate, endDate: LocalDate): Gathering {
+    fun create(memberId: Long, name: String, type: GatheringType, startDate: LocalDate, endDate: LocalDate): Gathering {
         return gatheringRepository.save(
             Gathering(
                 memberId = memberId,
                 name = name,
+                type = type,
                 startDate = startDate,
                 endDate = endDate
             )
@@ -38,9 +39,9 @@ class GatheringService(
         return gatheringRepository.findAllByMemberId(memberId)
     }
 
-    fun update(id: Long, memberId: Long, name: String, startDate: LocalDate, endDate: LocalDate): Gathering {
+    fun update(id: Long, memberId: Long, name: String, type: GatheringType, startDate: LocalDate, endDate: LocalDate): Gathering {
         val gathering = findByIdAndValidateOwner(id, memberId)
-        gathering.update(name, startDate, endDate)
+        gathering.update(name, type, startDate, endDate)
         return gathering
     }
 
