@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: ENC(YOUR_ENCRYPTED_DB_URL)
+    url: ENC(Xaa8op7qCagPPd5qLzayQCV9o8DUn90MyOd1iVnNpXSTXhHdwtHROd5U8p/Jj/d5gvOIm56uVZSgdLxuysoU8RFJ9cub3JVKPu5ta4Agn6hOs+ovETC7Aczf9qJQYvTwMDFQNy7YHeELAlZ3sScUXPDRD3G0z9vnoS3XjvKTG2E=)
     driver-class-name: org.postgresql.Driver
-    username: ENC(1oTXESCJYI6D26JBaELptkH+SwaxKRaUGgZfHxyjBVdjpYx2DvuqFif/yU/bnmhD)
-    password: ENC(UGeVlajWG4xPhzj01YDKj/MB36DVZZ9mHFDy52bApaNCpsSZFfClY9fz31XifHPk)
+    username: ENC(lI4N9BQg0gfIqNiPqr3qLvbLGxoGV6jPGQ6XVYCWeCVMlqPePfuWDCK7/06HEMjS)
+    password: ENC(7Yv+AOqu1ASYXXgmhFe0sc6FLGfDNlqQiFWl6+edUa1oYNS4gUeXmN0eE5Bw0VK7)
 
   jpa:
     hibernate:
