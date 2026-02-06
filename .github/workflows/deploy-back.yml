@@ -10,7 +10,7 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   S3_BUCKET: n-bang-deploy
-  CODE_DEPLOY_APP: n-bang-api
+  CODE_DEPLOY_APP: n-bang-app
   CODE_DEPLOY_GROUP: n-bang-api-group
 
 jobs:
