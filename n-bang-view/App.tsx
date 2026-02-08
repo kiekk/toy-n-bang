@@ -113,6 +113,17 @@ const App: React.FC = () => {
     localStorage.setItem('nbang_directory', JSON.stringify(directory));
   }, [directory]);
 
+  // Prevent background scroll when any modal is open
+  useEffect(() => {
+    const isModalOpen = isCreatingGathering || !!editingParticipantId || isImportModalOpen;
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isCreatingGathering, editingParticipantId, isImportModalOpen]);
+
   // Show toast when data error occurs
   useEffect(() => {
     if (dataError) {
@@ -471,13 +482,13 @@ const App: React.FC = () => {
               <button onClick={handleLogout} className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 mt-0.5">로그아웃 <LogOut size={12} /></button>
             </div>
           </div>
-          <button onClick={() => setIsCreatingGathering(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-8 py-4 font-black flex items-center gap-2 transition-all shadow-lg shadow-indigo-200 active:scale-95"><Plus size={24} /> 새 모임 시작하기</button>
+          <button onClick={() => setIsCreatingGathering(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-5 sm:px-8 py-3 sm:py-4 font-black flex items-center gap-2 transition-all shadow-lg shadow-indigo-200 active:scale-95 text-sm sm:text-base"><Plus size={20} /> 새 모임 시작하기</button>
         </header>
 
         {/* Improved Calendar with Timeline Bars */}
-        <section className="bg-white rounded-[48px] border border-slate-200 p-8 md:p-12 shadow-sm relative overflow-hidden">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3"><CalendarIcon className="text-indigo-600" size={32} /> 정산 캘린더</h2>
+        <section className="bg-white rounded-3xl sm:rounded-[48px] border border-slate-200 p-4 sm:p-8 md:p-12 shadow-sm relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-12">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 flex items-center gap-3 whitespace-nowrap"><CalendarIcon className="text-indigo-600" size={28} /> 정산 캘린더</h2>
             <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100 shadow-inner">
               <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))} className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all"><ChevronLeftIcon size={20} /></button>
               <span className="font-black text-slate-700 min-w-[120px] text-center tracking-tight">{viewDate.getFullYear()}년 {viewDate.getMonth() + 1}월</span>
@@ -488,13 +499,13 @@ const App: React.FC = () => {
           <div className="grid grid-cols-7 gap-y-1 gap-x-1">
             {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (<div key={d} className="text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] pb-6">{d}</div>))}
             {calendarDays.map((date, i) => {
-              if (!date) return <div key={`empty-${i}`} className="h-28" />;
+              if (!date) return <div key={`empty-${i}`} className="h-16 sm:h-28" />;
               const isToday = date.toDateString() === new Date().toDateString();
               const isSelected = selectedDate === date.toDateString();
               const dayGatherings = gatherings.filter(g => isDateInGathering(date, g));
               
               return (
-                <div key={date.toDateString()} className="relative h-28 border border-slate-50/50 flex flex-col pt-2 overflow-hidden">
+                <div key={date.toDateString()} className="relative h-16 sm:h-28 border border-slate-50/50 flex flex-col pt-1 sm:pt-2 overflow-hidden">
                   <div className="px-2 mb-1 flex justify-between items-start">
                     <button 
                       onClick={() => setSelectedDate(date.toDateString())} 
@@ -540,14 +551,14 @@ const App: React.FC = () => {
         {/* Selected Date Details */}
         {selectedDate && (
            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <h3 className="text-xl font-black text-slate-800 mb-8 flex items-center justify-between">
-                <span className="flex items-center gap-2"><Clock className="text-slate-400" /> {new Date(selectedDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 일정</span>
+              <h3 className="text-base sm:text-xl font-black text-slate-800 mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <span className="flex items-center gap-2"><Clock className="text-slate-400" size={18} /> {new Date(selectedDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 일정</span>
                 {gatherings.length > 0 && <span className="text-xs font-bold text-slate-400">총 {gatherings.length}개의 모임 관리 중</span>}
               </h3>
              {selectedDayGatherings.length > 0 ? (
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  {selectedDayGatherings.map(g => (
-                   <div key={g.id} onClick={() => { setActiveGatheringId(g.id); setActiveTab('participants'); }} className="group bg-white p-7 rounded-[32px] border border-slate-200 cursor-pointer hover:border-indigo-400 hover:shadow-2xl transition-all relative overflow-hidden">
+                   <div key={g.id} onClick={() => { setActiveGatheringId(g.id); setActiveTab('participants'); }} className="group bg-white p-5 sm:p-7 rounded-2xl sm:rounded-[32px] border border-slate-200 cursor-pointer hover:border-indigo-400 hover:shadow-2xl transition-all relative overflow-hidden">
                      <button onClick={(e) => deleteGathering(g.id, e)} className="absolute top-4 right-4 p-2 text-slate-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all z-10"><Trash2 size={18} /></button>
                      <h4 className="font-black text-slate-800 text-lg mb-1 truncate pr-8">{g.name}</h4>
                      <p className="text-[10px] text-slate-400 font-bold mb-6 flex items-center gap-1 uppercase tracking-widest"><CalendarDays size={12}/> {new Date(g.startDate).toLocaleDateString()} 시작</p>
@@ -573,13 +584,13 @@ const App: React.FC = () => {
 
         {/* Modal: Create Gathering with Adjusted Button Widths */}
         {isCreatingGathering && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-            <div className="bg-white rounded-[48px] p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-              <h2 className="text-3xl font-black mb-8 text-slate-900 tracking-tight">새로운 정산 시작</h2>
-              <div className="space-y-6 mb-12">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto" onClick={() => setIsCreatingGathering(false)}>
+            <div className="bg-white rounded-3xl sm:rounded-[48px] p-6 sm:p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-auto" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-2xl sm:text-3xl font-black mb-6 sm:mb-8 text-slate-900 tracking-tight">새로운 정산 시작</h2>
+              <div className="space-y-5 sm:space-y-6 mb-8 sm:mb-12">
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">모임 타입</label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {GATHERING_TYPES.map((gt) => (
                       <button
                         key={gt.type}
@@ -617,7 +628,7 @@ const App: React.FC = () => {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">시작일</label>
                       <input
@@ -625,7 +636,7 @@ const App: React.FC = () => {
                         value={startDateStr}
                         max="9999-12-31"
                         onChange={(e) => { setStartDateStr(e.target.value); setDateError(''); }}
-                        className={`w-full bg-slate-50 border rounded-2xl px-5 py-4 font-bold text-sm ${
+                        className={`w-full bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
                           dateError ? 'border-red-400' : 'border-slate-200'
                         }`}
                       />
@@ -637,7 +648,7 @@ const App: React.FC = () => {
                         value={endDateStr}
                         max="9999-12-31"
                         onChange={(e) => { setEndDateStr(e.target.value); setDateError(''); }}
-                        className={`w-full bg-slate-50 border rounded-2xl px-5 py-4 font-bold text-sm ${
+                        className={`w-full bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
                           dateError ? 'border-red-400' : 'border-slate-200'
                         }`}
                       />
@@ -697,88 +708,99 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto p-6 md:p-12">
+      <main className="max-w-4xl mx-auto p-4 sm:p-6 md:p-12">
+        {/* Mobile header - back button + gathering info */}
+        <div className="lg:hidden mb-6">
+          <button onClick={() => setActiveGatheringId(null)} className="flex items-center gap-1 text-slate-400 hover:text-indigo-600 font-black text-sm transition-colors mb-3"><ChevronLeft size={18} /> 전체 목록</button>
+          <h1 className="text-lg font-black text-slate-900 truncate">{activeGathering.name}</h1>
+          <p className="text-xs font-bold text-slate-400">{new Date(activeGathering.startDate).toLocaleDateString()} ~ {new Date(activeGathering.endDate).toLocaleDateString()}</p>
+        </div>
         {activeTab === 'participants' && (
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
-              <div><h2 className="text-3xl font-black text-slate-900 tracking-tight">참여자 관리</h2><p className="text-slate-500 font-medium">정산 멤버들의 정보를 관리하세요.</p></div>
-              <button onClick={() => setIsImportModalOpen(true)} className="flex items-center gap-2 bg-white text-indigo-600 px-6 py-4 rounded-[20px] font-black hover:bg-indigo-50 transition-all text-sm shadow-sm border border-slate-200 active:scale-95"><Zap size={20} className="fill-indigo-600" /> 빠른 가져오기</button>
+            <header className="mb-6 sm:mb-10 flex flex-wrap items-center justify-between gap-4">
+              <div><h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">참여자 관리</h2><p className="text-sm sm:text-base text-slate-500 font-medium">정산 멤버들의 정보를 관리하세요.</p></div>
+              <button onClick={() => setIsImportModalOpen(true)} className="flex items-center gap-2 bg-white text-indigo-600 px-4 sm:px-6 py-3 sm:py-4 rounded-[20px] font-black hover:bg-indigo-50 transition-all text-sm shadow-sm border border-slate-200 active:scale-95"><Zap size={20} className="fill-indigo-600" /> 빠른 가져오기</button>
             </header>
-            <section className="bg-white rounded-[48px] shadow-sm border border-slate-200 p-10 mb-8">
-              <div className="flex gap-4 mb-12">
-                <input type="text" value={newParticipantName} onChange={(e) => setNewParticipantName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addParticipant()} placeholder="멤버 이름을 입력하세요" className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 font-black" />
-                <button onClick={() => addParticipant()} className={`${activeGathering.color || 'bg-indigo-600'} text-white rounded-2xl px-12 py-4 font-black hover:brightness-110 shadow-xl shadow-indigo-100 transition-all active:scale-95`}>추가</button>
+            <section className="bg-white rounded-3xl sm:rounded-[48px] shadow-sm border border-slate-200 p-5 sm:p-10 mb-8">
+              <div className="flex gap-3 sm:gap-4 mb-8 sm:mb-12">
+                <input type="text" value={newParticipantName} onChange={(e) => setNewParticipantName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addParticipant()} placeholder="멤버 이름을 입력하세요" className="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 font-black" />
+                <button onClick={() => addParticipant()} className={`${activeGathering.color || 'bg-indigo-600'} text-white rounded-2xl px-6 sm:px-12 py-3 sm:py-4 font-black hover:brightness-110 shadow-xl shadow-indigo-100 transition-all active:scale-95 whitespace-nowrap`}>추가</button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {activeGathering.participants.map((p) => (
-                  <div key={p.id} className="bg-slate-50 p-7 rounded-[32px] border border-transparent hover:border-indigo-100 hover:bg-white transition-all group flex flex-col justify-between shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-4"><div className={`w-14 h-14 rounded-[20px] ${activeGathering.color?.replace('bg-', 'bg-opacity-10 text-') || 'bg-indigo-50 text-indigo-600'} flex items-center justify-center font-black text-xl shadow-inner`}>{p.name.charAt(0)}</div><span className="font-black text-slate-800 text-lg">{p.name}</span></div>
-                      <div className="flex gap-1"><button onClick={() => { setEditingParticipantId(p.id); setEditParticipantName(p.name); setEditBankName(p.bankName || ''); setEditAccountNum(p.accountNumber || ''); }} className="text-slate-300 hover:text-indigo-600 p-2 transition-colors"><Edit2 size={22} /></button><button onClick={() => removeParticipant(p.id)} className="text-slate-200 hover:text-red-500 p-2 transition-colors"><Trash2 size={22} /></button></div>
+                  <div key={p.id} className="bg-slate-50 p-5 sm:p-7 rounded-2xl sm:rounded-[32px] border border-transparent hover:border-indigo-100 hover:bg-white transition-all group flex flex-col justify-between shadow-sm">
+                    <div className="flex items-center justify-between mb-4 sm:mb-6">
+                      <div className="flex items-center gap-3 sm:gap-4 min-w-0"><div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-[20px] ${activeGathering.color?.replace('bg-', 'bg-opacity-10 text-') || 'bg-indigo-50 text-indigo-600'} flex items-center justify-center font-black text-base sm:text-xl shadow-inner flex-shrink-0`}>{p.name.charAt(0)}</div><span className="font-black text-slate-800 text-base sm:text-lg truncate">{p.name}</span></div>
+                      <div className="flex gap-1 flex-shrink-0"><button onClick={() => { setEditingParticipantId(p.id); setEditParticipantName(p.name); setEditBankName(p.bankName || ''); setEditAccountNum(p.accountNumber || ''); }} className="text-slate-300 hover:text-indigo-600 p-1.5 sm:p-2 transition-colors"><Edit2 size={18} /></button><button onClick={() => removeParticipant(p.id)} className="text-slate-200 hover:text-red-500 p-1.5 sm:p-2 transition-colors"><Trash2 size={18} /></button></div>
                     </div>
-                    <div className="flex items-center gap-3 px-5 py-4 bg-white rounded-2xl border border-slate-100 group-hover:border-indigo-50 shadow-inner">
-                      <CreditCard size={18} className="text-indigo-300" />
+                    <div className="flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl border border-slate-100 group-hover:border-indigo-50 shadow-inner">
+                      <CreditCard size={16} className="text-indigo-300 flex-shrink-0" />
                       <span className="text-xs font-black text-slate-400 truncate">{p.bankName ? `${p.bankName} ${p.accountNumber}` : '계좌 정보를 등록해 주세요.'}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </section>
-            <button onClick={() => setActiveTab('rounds')} className="w-full mt-12 bg-slate-900 text-white rounded-[32px] py-7 font-black text-xl flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-2xl active:scale-[0.98]">지출 내역 작성하러 가기 <ChevronRight size={32} /></button>
+            <button onClick={() => setActiveTab('rounds')} className="w-full mt-8 sm:mt-12 bg-slate-900 text-white rounded-2xl sm:rounded-[32px] py-5 sm:py-7 font-black text-base sm:text-xl flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-2xl active:scale-[0.98]">지출 내역 작성하러 가기 <ChevronRight size={24} /></button>
           </div>
         )}
 
         {activeTab === 'rounds' && (
-          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-10">
-             <header className="flex items-center justify-between mb-2">
-               <div><h2 className="text-3xl font-black text-slate-900 tracking-tight">지출 내역</h2><p className="text-slate-500 font-medium">언제, 누가, 얼마를 썼는지 기록하세요.</p></div>
-               <button onClick={handleAddRound} className={`${activeGathering.color || 'bg-indigo-600'} text-white rounded-[20px] px-8 py-4 font-black flex items-center gap-2 shadow-xl active:scale-95`}><Plus size={24} /> 지출 추가</button>
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-6 sm:space-y-10">
+             <header className="flex flex-wrap items-center justify-between gap-4 mb-2">
+               <div><h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">지출 내역</h2><p className="text-sm sm:text-base text-slate-500 font-medium">언제, 누가, 얼마를 썼는지 기록하세요.</p></div>
+               <button onClick={handleAddRound} className={`${activeGathering.color || 'bg-indigo-600'} text-white rounded-[20px] px-5 sm:px-8 py-3 sm:py-4 font-black flex items-center gap-2 shadow-xl active:scale-95 text-sm sm:text-base`}><Plus size={20} /> 지출 추가</button>
              </header>
              <div className="space-y-8">
                 {activeGathering.rounds.map(round => (
-                  <div key={round.id} className="bg-white rounded-[48px] shadow-sm border border-slate-200 p-10 hover:shadow-2xl transition-all">
+                  <div key={round.id} className="bg-white rounded-2xl sm:rounded-[48px] shadow-sm border border-slate-200 p-5 sm:p-10 hover:shadow-2xl transition-all">
                     {/* 첫 번째 행: 항목 이름 + 결제 멤버 + 금액 + 삭제 버튼 */}
-                    <div className="flex flex-wrap items-center gap-4 mb-6">
-                      <input
-                        type="text"
-                        value={round.title}
-                        onChange={(e) => handleUpdateRound(round.id, { title: e.target.value })}
-                        onBlur={() => saveRoundToServer(round.id)}
-                        className="flex-1 min-w-[150px] font-black text-2xl bg-transparent border-none p-0 focus:ring-0 placeholder:text-slate-200"
-                        placeholder="항목 이름 (예: 1차 고기집)"
-                      />
-                      <div className="flex items-center gap-3 bg-slate-50 rounded-[20px] px-5 py-3 border border-slate-100 shadow-sm">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">결제</span>
-                        {activeGathering.participants.length === 0 ? (
-                          <span className="text-red-500 text-xs font-bold">참여자 필요</span>
-                        ) : (
-                          <select
-                            value={round.payerId}
-                            onChange={(e) => {
-                              const newPayerId = e.target.value;
-                              handleUpdateRound(round.id, { payerId: newPayerId });
-                              saveRoundToServer(round.id, { payerId: newPayerId });
-                            }}
-                            className="bg-transparent border-none p-0 font-black text-slate-800 focus:ring-0 cursor-pointer text-sm"
-                          >
-                            {activeGathering.participants.map(p => (
-                              <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 bg-slate-50 px-5 py-3 rounded-[20px] border border-slate-100 shadow-inner">
+                    <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-4 mb-4 sm:mb-6">
+                      <div className="flex items-center gap-2">
                         <input
-                          type="number"
-                          value={round.amount === 0 ? '' : round.amount}
-                          onChange={(e) => handleUpdateRound(round.id, { amount: Number(e.target.value) })}
+                          type="text"
+                          value={round.title}
+                          onChange={(e) => handleUpdateRound(round.id, { title: e.target.value })}
                           onBlur={() => saveRoundToServer(round.id)}
-                          className={`w-28 font-black text-right ${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'} bg-transparent border-none p-0 focus:ring-0 text-xl`}
-                          placeholder="0"
+                          className="flex-1 min-w-0 sm:min-w-[150px] font-black text-lg sm:text-2xl bg-transparent border-none p-0 focus:ring-0 placeholder:text-slate-200"
+                          placeholder="항목 이름"
                         />
-                        <span className="font-black text-slate-400 text-sm">원</span>
+                        <button onClick={() => handleDeleteRound(round.id)} className="p-2 text-slate-200 hover:text-red-500 transition-colors sm:hidden flex-shrink-0"><Trash2 size={20} /></button>
                       </div>
-                      <button onClick={() => handleDeleteRound(round.id)} className="p-2 text-slate-200 hover:text-red-500 transition-colors"><Trash2 size={24} /></button>
+                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 rounded-xl sm:rounded-[20px] px-3 sm:px-5 py-2 sm:py-3 border border-slate-100 shadow-sm">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">결제</span>
+                          {activeGathering.participants.length === 0 ? (
+                            <span className="text-red-500 text-xs font-bold">참여자 필요</span>
+                          ) : (
+                            <select
+                              value={round.payerId}
+                              onChange={(e) => {
+                                const newPayerId = e.target.value;
+                                handleUpdateRound(round.id, { payerId: newPayerId });
+                                saveRoundToServer(round.id, { payerId: newPayerId });
+                              }}
+                              className="bg-transparent border-none p-0 font-black text-slate-800 focus:ring-0 cursor-pointer text-sm"
+                            >
+                              {activeGathering.participants.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 px-3 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-[20px] border border-slate-100 shadow-inner flex-1 sm:flex-none">
+                          <input
+                            type="number"
+                            value={round.amount === 0 ? '' : round.amount}
+                            onChange={(e) => handleUpdateRound(round.id, { amount: Number(e.target.value) })}
+                            onBlur={() => saveRoundToServer(round.id)}
+                            className={`w-full sm:w-28 font-black text-right ${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'} bg-transparent border-none p-0 focus:ring-0 text-lg sm:text-xl`}
+                            placeholder="0"
+                          />
+                          <span className="font-black text-slate-400 text-sm">원</span>
+                        </div>
+                      </div>
+                      <button onClick={() => handleDeleteRound(round.id)} className="hidden sm:block p-2 text-slate-200 hover:text-red-500 transition-colors"><Trash2 size={24} /></button>
                     </div>
                     {/* 두 번째 행: 제외 인원 선택 */}
                     {activeGathering.participants.length > 0 && (
@@ -834,34 +856,34 @@ const App: React.FC = () => {
                   </div>
                 ))}
              </div>
-             <button onClick={() => setActiveTab('result')} className={`w-full ${activeGathering.color || 'bg-indigo-600'} text-white rounded-[32px] py-7 font-black text-xl hover:brightness-110 shadow-2xl transition-all active:scale-[0.98]`}>정산 결과 산출하기</button>
+             <button onClick={() => setActiveTab('result')} className={`w-full ${activeGathering.color || 'bg-indigo-600'} text-white rounded-2xl sm:rounded-[32px] py-5 sm:py-7 font-black text-base sm:text-xl hover:brightness-110 shadow-2xl transition-all active:scale-[0.98]`}>정산 결과 산출하기</button>
           </div>
         )}
 
         {activeTab === 'result' && (
-           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-16">
+           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-8 sm:space-y-16">
              <header className="text-center">
-               <div className={`${activeGathering.color?.replace('bg-', 'bg-opacity-20 text-') || 'bg-indigo-100 text-indigo-700'} text-[11px] font-black px-5 py-2 rounded-full inline-block uppercase tracking-[0.3em] mb-6`}>Complete</div>
-               <h2 className="text-6xl font-black text-slate-900 mb-6 tracking-tighter">정산 준비 완료!</h2>
-               <p className="text-slate-500 text-lg font-medium">총 {calculationResult.totalSpent.toLocaleString()}원, 정확하게 나누었습니다.</p>
+               <div className={`${activeGathering.color?.replace('bg-', 'bg-opacity-20 text-') || 'bg-indigo-100 text-indigo-700'} text-[11px] font-black px-5 py-2 rounded-full inline-block uppercase tracking-[0.3em] mb-4 sm:mb-6`}>Complete</div>
+               <h2 className="text-3xl sm:text-6xl font-black text-slate-900 mb-4 sm:mb-6 tracking-tighter">정산 준비 완료!</h2>
+               <p className="text-slate-500 text-sm sm:text-lg font-medium">총 {calculationResult.totalSpent.toLocaleString()}원, 정확하게 나누었습니다.</p>
              </header>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <section className="bg-white rounded-[56px] shadow-sm border border-slate-200 p-12">
-                  <h3 className="text-2xl font-black mb-10 flex items-center gap-4"><Users className={`${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'}`} size={36} /> 멤버별 요약</h3>
-                  <div className="space-y-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10">
+                <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12">
+                  <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4"><Users className={`${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'}`} size={28} /> 멤버별 요약</h3>
+                  <div className="space-y-4 sm:space-y-6">
                     {calculationResult.balances.map(b => (
-                      <div key={b.participantId} className="flex items-start justify-between gap-4 p-7 bg-slate-50 rounded-[32px] border border-transparent hover:border-indigo-100 hover:bg-white transition-all shadow-sm">
-                        <div className="min-w-0"><p className="font-black text-slate-800 text-xl truncate">{b.name}</p><p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-5 whitespace-nowrap">지불 {b.totalPaid.toLocaleString()}원</p></div>
-                        <p className={`text-2xl font-black whitespace-nowrap flex-shrink-0 ${b.netBalance > 0 ? 'text-green-600' : b.netBalance < 0 ? 'text-red-500' : 'text-slate-400'}`}>{b.netBalance > 0 ? '+' : ''}{Math.round(b.netBalance).toLocaleString()}원</p>
+                      <div key={b.participantId} className="flex items-start justify-between gap-3 sm:gap-4 p-4 sm:p-7 bg-slate-50 rounded-2xl sm:rounded-[32px] border border-transparent hover:border-indigo-100 hover:bg-white transition-all shadow-sm">
+                        <div className="min-w-0"><p className="font-black text-slate-800 text-base sm:text-xl truncate">{b.name}</p><p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-2 sm:mt-5 whitespace-nowrap">지불 {b.totalPaid.toLocaleString()}원</p></div>
+                        <p className={`text-lg sm:text-2xl font-black whitespace-nowrap flex-shrink-0 ${b.netBalance > 0 ? 'text-green-600' : b.netBalance < 0 ? 'text-red-500' : 'text-slate-400'}`}>{b.netBalance > 0 ? '+' : ''}{Math.round(b.netBalance).toLocaleString()}원</p>
                       </div>
                     ))}
                   </div>
                 </section>
-                <section className="bg-white rounded-[56px] shadow-sm border border-slate-200 p-12 flex flex-col">
-                   <h3 className="text-2xl font-black mb-6 flex items-center gap-4"><ArrowRightLeft className={`${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'}`} size={36} /> 송금 가이드</h3>
+                <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12 flex flex-col">
+                   <h3 className="text-xl sm:text-2xl font-black mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4"><ArrowRightLeft className={`${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'}`} size={28} /> 송금 가이드</h3>
                    {/* 버림 단위 선택 */}
-                   <div className="flex items-center gap-3 mb-8 p-4 bg-slate-50 rounded-2xl">
+                   <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8 p-3 sm:p-4 bg-slate-50 rounded-2xl">
                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">버림 단위</span>
                      <select
                        value={roundingUnit}
@@ -875,27 +897,27 @@ const App: React.FC = () => {
                        <option value={10000}>10,000원</option>
                      </select>
                    </div>
-                   <div className="space-y-6 flex-1">
+                   <div className="space-y-4 sm:space-y-6 flex-1">
                      {calculationResult.debts.map((d, i) => {
                        const receiver = activeGathering.participants.find(p => p.id === d.toParticipantId);
                        return (
-                         <div key={i} className={`p-6 ${activeGathering.color?.replace('bg-', 'bg-opacity-5 border-opacity-20 border-') || 'bg-indigo-50/40 border-indigo-50'} border-2 rounded-[32px] group hover:border-opacity-50 transition-all shadow-sm`}>
-                           <div className="flex items-center justify-center gap-6 mb-4">
+                         <div key={i} className={`p-4 sm:p-6 ${activeGathering.color?.replace('bg-', 'bg-opacity-5 border-opacity-20 border-') || 'bg-indigo-50/40 border-indigo-50'} border-2 rounded-2xl sm:rounded-[32px] group hover:border-opacity-50 transition-all shadow-sm`}>
+                           <div className="flex items-center justify-center gap-4 sm:gap-6 mb-3 sm:mb-4">
                              <div className="flex flex-col items-center">
                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">보낼 사람</span>
-                               <span className="font-black text-slate-700 text-lg">{d.from}</span>
+                               <span className="font-black text-slate-700 text-base sm:text-lg">{d.from}</span>
                              </div>
                              <ChevronRightIcon className={`${activeGathering.color?.replace('bg-', 'text-opacity-60 text-') || 'text-indigo-400'} flex-shrink-0 mt-4`} size={20} />
                              <div className="flex flex-col items-center">
                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">받는 사람</span>
-                               <span className="font-black text-slate-700 text-lg">{d.to}</span>
+                               <span className="font-black text-slate-700 text-base sm:text-lg">{d.to}</span>
                              </div>
                            </div>
-                           <div className={`text-2xl font-black text-center ${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'}`}>{Math.round(d.amount).toLocaleString()}원</div>
+                           <div className={`text-xl sm:text-2xl font-black text-center ${activeGathering.color?.replace('bg-', 'text-') || 'text-indigo-600'}`}>{Math.round(d.amount).toLocaleString()}원</div>
                            {receiver?.bankName && (
-                             <button onClick={() => copyToClipboard(`${receiver.bankName} ${receiver.accountNumber}`)} className="w-full mt-4 flex items-center justify-between px-5 py-3 bg-white rounded-2xl text-xs font-black text-slate-600 hover:border-indigo-400 border border-slate-100 transition-all shadow-sm active:scale-95">
-                               <div className="flex items-center gap-3"><CreditCard size={18} className="text-indigo-400" /> <span>{receiver.bankName} {receiver.accountNumber}</span></div>
-                               <Copy size={16} className="text-slate-200 group-hover:text-indigo-400" />
+                             <button onClick={() => copyToClipboard(`${receiver.bankName} ${receiver.accountNumber}`)} className="w-full mt-3 sm:mt-4 flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3 bg-white rounded-xl sm:rounded-2xl text-xs font-black text-slate-600 hover:border-indigo-400 border border-slate-100 transition-all shadow-sm active:scale-95">
+                               <div className="flex items-center gap-2 sm:gap-3 min-w-0"><CreditCard size={16} className="text-indigo-400 flex-shrink-0" /> <span className="truncate">{receiver.bankName} {receiver.accountNumber}</span></div>
+                               <Copy size={14} className="text-slate-200 group-hover:text-indigo-400 flex-shrink-0 ml-2" />
                              </button>
                            )}
                          </div>
@@ -905,23 +927,23 @@ const App: React.FC = () => {
                 </section>
              </div>
 
-             <div className="space-y-8 pb-10">
+             <div className="space-y-6 sm:space-y-8 pb-10">
                <button onClick={() => {
                   const message = generateKakaoMessage(activeGathering.name, activeGathering.participants, activeGathering.rounds, calculationResult.debts);
                   setKakaoMessage(message);
-               }} className={`w-full ${activeGathering.color || 'bg-indigo-600'} text-white rounded-[40px] py-10 font-black text-3xl flex items-center justify-center gap-5 hover:brightness-110 shadow-2xl transition-all active:scale-[0.98]`}>
-                 <Copy size={40} />
+               }} className={`w-full ${activeGathering.color || 'bg-indigo-600'} text-white rounded-2xl sm:rounded-[40px] py-6 sm:py-10 font-black text-lg sm:text-3xl flex items-center justify-center gap-3 sm:gap-5 hover:brightness-110 shadow-2xl transition-all active:scale-[0.98]`}>
+                 <Copy size={24} />
                  카카오톡 공유 메시지 생성
                </button>
 
                {kakaoMessage && (
-                 <div className={`${activeGathering.color || 'bg-indigo-600'} p-14 rounded-[72px] text-white shadow-2xl shadow-indigo-100 animate-in slide-in-from-bottom-10 duration-700`}>
-                   <p className="whitespace-pre-wrap leading-relaxed mb-12 text-lg font-medium text-white/90 bg-white/10 p-6 rounded-3xl">{kakaoMessage}</p>
-                   <div className="flex flex-wrap gap-6">
-                    <button onClick={() => copyToClipboard(kakaoMessage)} className="bg-white text-indigo-600 px-12 py-6 rounded-[28px] font-black flex items-center gap-4 hover:bg-indigo-50 shadow-2xl transition-all active:scale-95">
-                      {showCopyFeedback ? <Check size={24}/> : <Copy size={24}/>} {showCopyFeedback ? '복사 완료!' : '메시지 복사하기'}
+                 <div className={`${activeGathering.color || 'bg-indigo-600'} p-6 sm:p-14 rounded-3xl sm:rounded-[72px] text-white shadow-2xl shadow-indigo-100 animate-in slide-in-from-bottom-10 duration-700`}>
+                   <p className="whitespace-pre-wrap leading-relaxed mb-6 sm:mb-12 text-sm sm:text-lg font-medium text-white/90 bg-white/10 p-4 sm:p-6 rounded-2xl sm:rounded-3xl">{kakaoMessage}</p>
+                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                    <button onClick={() => copyToClipboard(kakaoMessage)} className="bg-white text-indigo-600 px-8 sm:px-12 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black flex items-center justify-center gap-3 sm:gap-4 hover:bg-indigo-50 shadow-2xl transition-all active:scale-95">
+                      {showCopyFeedback ? <Check size={20}/> : <Copy size={20}/>} {showCopyFeedback ? '복사 완료!' : '메시지 복사하기'}
                     </button>
-                    <button onClick={() => setKakaoMessage('')} className="bg-white/20 text-white px-10 py-6 rounded-[28px] font-black hover:bg-white/30 transition-all border border-white/20">닫기</button>
+                    <button onClick={() => setKakaoMessage('')} className="bg-white/20 text-white px-8 sm:px-10 py-4 sm:py-6 rounded-2xl sm:rounded-[28px] font-black hover:bg-white/30 transition-all border border-white/20">닫기</button>
                    </div>
                  </div>
                )}
@@ -939,10 +961,10 @@ const App: React.FC = () => {
 
       {/* Modal: Edit Participant */}
       {editingParticipantId && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[48px] p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-            <h2 className="text-3xl font-black mb-10 flex items-center gap-4 text-slate-900"><Edit2 className="text-indigo-600" size={36} /> 참여자 정보 수정</h2>
-            <div className="space-y-6 mb-12">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto" onClick={() => setEditingParticipantId(null)}>
+          <div className="bg-white rounded-3xl sm:rounded-[48px] p-6 sm:p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-auto" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-2xl sm:text-3xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4 text-slate-900"><Edit2 className="text-indigo-600" size={28} /> 참여자 정보 수정</h2>
+            <div className="space-y-5 sm:space-y-6 mb-8 sm:mb-12">
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">이름</label>
                 <input type="text" value={editParticipantName} onChange={(e) => setEditParticipantName(e.target.value)} placeholder="참여자 이름" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-bold text-lg" />
@@ -966,12 +988,12 @@ const App: React.FC = () => {
 
       {/* Modal: Quick Import */}
       {isImportModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[56px] p-12 w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-4 mb-6 text-indigo-600"><Zap size={40} className="fill-indigo-600" /><h2 className="text-4xl font-black tracking-tight">빠른 추가</h2></div>
-            <p className="text-slate-500 font-medium mb-10 leading-relaxed text-lg pr-4">참여자 목록을 붙여넣으세요.<br/>줄바꿈 또는 쉼표로 구분해주세요.</p>
-            <textarea value={importText} onChange={(e) => setImportText(e.target.value)} placeholder="예:&#10;김철수 국민 123-45&#10;이영희 신한 678-90&#10;박민수" className="w-full h-56 bg-slate-50 border border-slate-200 rounded-[32px] p-8 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 mb-10 text-lg font-medium leading-relaxed shadow-inner" />
-            <div className="flex gap-5">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto" onClick={() => setIsImportModalOpen(false)}>
+          <div className="bg-white rounded-3xl sm:rounded-[56px] p-6 sm:p-12 w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-200 my-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 text-indigo-600"><Zap size={28} className="fill-indigo-600" /><h2 className="text-2xl sm:text-4xl font-black tracking-tight">빠른 추가</h2></div>
+            <p className="text-slate-500 font-medium mb-6 sm:mb-10 leading-relaxed text-base sm:text-lg pr-4">참여자 목록을 붙여넣으세요.<br/>줄바꿈 또는 쉼표로 구분해주세요.</p>
+            <textarea value={importText} onChange={(e) => setImportText(e.target.value)} placeholder="예:&#10;김철수 국민 123-45&#10;이영희 신한 678-90&#10;박민수" className="w-full h-44 sm:h-56 bg-slate-50 border border-slate-200 rounded-2xl sm:rounded-[32px] p-5 sm:p-8 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 mb-6 sm:mb-10 text-base sm:text-lg font-medium leading-relaxed shadow-inner" />
+            <div className="flex gap-3 sm:gap-5">
               <button onClick={() => setIsImportModalOpen(false)} className="w-1/3 bg-slate-100 text-slate-500 py-6 rounded-[28px] font-black hover:bg-slate-200 transition-all active:scale-95">취소</button>
               <button onClick={handleQuickImport} disabled={isImporting || !importText.trim()} className="w-2/3 bg-indigo-600 text-white py-6 rounded-[28px] font-black flex items-center justify-center gap-3 hover:bg-indigo-700 shadow-2xl shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50">
                 {isImporting ? <Loader2 className="animate-spin" size={24}/> : <Zap size={24}/>} {isImporting ? '추가 중...' : '추가하기'}
