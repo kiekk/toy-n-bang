@@ -3,19 +3,23 @@ name: Deploy Backend
 on:
   pull_request:
     branches:
-      - backend-deploy
+      - deploy-back
     types: [closed]
+  workflow_dispatch:  # 수동 실행 가능
 
 env:
   AWS_REGION: ap-northeast-2
-  S3_BUCKET: n-bang-codedeploy-artifacts
-  CODE_DEPLOY_APP: n-bang-api
+  S3_BUCKET: n-bang-deploy
+  CODE_DEPLOY_APP: n-bang-app
   CODE_DEPLOY_GROUP: n-bang-api-group
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: n-bang-api
 
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +43,8 @@ jobs:
 
       - name: Build JAR
         run: ./gradlew bootJar -x test
+        env:
+          JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_PASSWORD }}
 
       - name: Prepare deployment package
         run: |
@@ -46,7 +52,6 @@ jobs:
           cp build/libs/*.jar deploy/app.jar
           cp appspec.yml deploy/
           cp -r scripts deploy/
-          cp Dockerfile deploy/
           cd deploy && zip -r ../deploy.zip .
 
       - name: Upload to S3

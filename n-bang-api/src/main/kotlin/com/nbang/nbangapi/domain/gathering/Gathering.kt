@@ -17,6 +17,10 @@ class Gathering(
     @Column(nullable = false)
     var name: String,
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var type: GatheringType = GatheringType.OTHER,
+
     @Column(nullable = false)
     var startDate: LocalDate,
 
@@ -24,8 +28,9 @@ class Gathering(
     var endDate: LocalDate,
 ) : BaseEntity() {
 
-    fun update(name: String, startDate: LocalDate, endDate: LocalDate) {
+    fun update(name: String, type: GatheringType, startDate: LocalDate, endDate: LocalDate) {
         this.name = name
+        this.type = type
         this.startDate = startDate
         this.endDate = endDate
     }

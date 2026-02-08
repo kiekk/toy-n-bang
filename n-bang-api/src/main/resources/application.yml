@@ -35,6 +35,7 @@ spring:
           google:
             client-id: ENC(lGeNlQgtr9Yal3o+CIgCsm6sDJRV7BintTRZk5+tn/fvvcweGDQ/KDmNRjFJV2NXxB4kUfXcs4LYiciD3MlIm2kC7otFZHpeH4cJBFButu/bpydqAas47Ju9jKAlxV4kYX/LxCTSwJyrK88bCbD3Yw==)
             client-secret: ENC(CNfEZYxMHye/nzRJxHJRXrK1ZY1xV4Pi7LqbRImbmtCZRg8mZA1SG6BgFSStZoUkdV0+rvzDL2CGG3KZXXFguWmlHXhfcA7NFcL1rN0lvCA=)
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - email
               - profile

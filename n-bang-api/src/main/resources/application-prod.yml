@@ -1,17 +1,18 @@
 spring:
   datasource:
-    url: ENC(YOUR_ENCRYPTED_DB_URL)
+    url: ENC(Xaa8op7qCagPPd5qLzayQCV9o8DUn90MyOd1iVnNpXSTXhHdwtHROd5U8p/Jj/d5gvOIm56uVZSgdLxuysoU8RFJ9cub3JVKPu5ta4Agn6hOs+ovETC7Aczf9qJQYvTwMDFQNy7YHeELAlZ3sScUXPDRD3G0z9vnoS3XjvKTG2E=)
     driver-class-name: org.postgresql.Driver
-    username: ENC(1oTXESCJYI6D26JBaELptkH+SwaxKRaUGgZfHxyjBVdjpYx2DvuqFif/yU/bnmhD)
-    password: ENC(UGeVlajWG4xPhzj01YDKj/MB36DVZZ9mHFDy52bApaNCpsSZFfClY9fz31XifHPk)
+    username: ENC(lI4N9BQg0gfIqNiPqr3qLvbLGxoGV6jPGQ6XVYCWeCVMlqPePfuWDCK7/06HEMjS)
+    password: ENC(7Yv+AOqu1ASYXXgmhFe0sc6FLGfDNlqQiFWl6+edUa1oYNS4gUeXmN0eE5Bw0VK7)
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         show_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     show-sql: true
 
@@ -24,12 +25,29 @@ spring:
       client:
         registration:
           google:
-            client-id: ENC(I9Vt/qF00B9N3jbSJ3SgFaxjiLjBpSS2RYHF/GEgWfNHYXDdT7lFhm/lAohce8v2o7i4CM7HY+QRwz790qXbBYwTpi/oEJs8QYKRbVraPGU=)
-            client-secret: ENC(9EY+rybXKkD/RRD8sTPK3CojCITiPCyw8YYI+kig4sSIeTTA+B4ARSOf7SUw+A1gB5qQm+iHjZESKvcJt6bgQTZgOTdzq9zTTQjIxkF10rG7ocZ81yZj5bH7pd73u6dvKBbg+RFctA06VRssjETh3g==)
+            client-id: ENC(E0zHbVWoTOWbxgh+ThNICLfIKnu3W9E8j90reZ0BEKJ/fiIg4B2CCL1w07U1Uzy64nTyYiAlMGJBTnMmPuRs+f+lLhFoT3atu2fSGZfAFJqLwp2ASt68BE+E6fXJ2nSHAJ7G3RofkoCOI3V9Ir0HVg==)
+            client-secret: ENC(xKgMweWoRcbujgxVUj2N2u/U21rpssHzf//1bcwvDA9+XNkhy2WOUITRT5s0U8s7Bn6XUnyf9Ix0x7dvLdJ/Eh2Wu0tF0QrH2pbjXa0pbYE=)
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - email
+              - profile
           kakao:
-            client-id: ENC(369PVlPuFxcQ24/MqQxWJ5gHe9oyooTSFIHi6HSG8EbmIdCQ9iBva09dWlfuXrFRfCdqF716dNLN2GV1X0/2e5YFFAOYk+M4QwTy7vLh+BE=)
-            client-secret: ENC(Hy6RkuEHUcbcaY6TISB0TCC4xL2YHRorP10iq7rXvDzG3nrAGcgn1BSi5P04Zjtn2VxIRGhdqrb+FMwBUw+BHvA93SpyYMl1Fpnc38tisnc=)
+            client-id: ENC(qVbnrO2eQby7xVVDQzaTci5Ss7Bdn52REwouzHpNiNK6XEtG2TK5JF+VE/GMZw7YP+1n+3ISxn8KfLlMgeoHcnJBPcBi29sCctDDJXUK5cE=)
+            client-secret: ENC(yuGPbDNrwUKYOlS8nXvtISosiesR/HA+hYQjQuUCZUEoFbOGao6N4dwZbVURmRijC+wEUUbvtMrRuE++/CGpfpVqSNcOjMRsk8aY3F7dszw=)
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile_nickname
+              - profile_image
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 app:
   oauth2:
-    authorized-redirect-uri: ENC(HOxm9NLyZk2J2BPoU03J+g/deYMF4nVsW3ZHDDS9OTBXH+qNVAfQjd9zATQrpW42hHr8bHHgvGtup4x9m92ZavKUAatwOqYljDzOpB+FxgU=)
+    authorized-redirect-uri: ENC(dv4yYgCQIGo8nyhY+f6WRNMkso7B/DxNBOFZ6MvRQ7V6caNYTNjYcTQvW2v19BFJdvQd4UbTA3Z6qD1YHmTHKfOLFs3xgBhh/jvGtv1BhvM=)

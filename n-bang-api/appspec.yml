@@ -11,6 +11,14 @@ permissions:
     owner: ec2-user
     group: ec2-user
     mode: 755
+    type:
+      - directory
+  - object: /home/ec2-user/app
+    owner: ec2-user
+    group: ec2-user
+    pattern: "**"
+    type:
+      - file
 
 hooks:
   BeforeInstall:

@@ -2,6 +2,7 @@ package com.nbang.nbangapi.interfaces.api.gathering
 
 import com.nbang.nbangapi.application.gathering.request.GatheringCreateRequest
 import com.nbang.nbangapi.application.gathering.request.GatheringUpdateRequest
+import com.nbang.nbangapi.domain.gathering.GatheringType
 import com.nbang.nbangapi.support.E2ETest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -17,6 +18,7 @@ class GatheringControllerTest : E2ETest() {
         // given
         val request = GatheringCreateRequest(
             name = "제주도 여행",
+            type = GatheringType.TRAVEL,
             startDate = LocalDate.of(2025, 1, 15),
             endDate = LocalDate.of(2025, 1, 17),
             participantNames = null
@@ -27,6 +29,7 @@ class GatheringControllerTest : E2ETest() {
             .andExpect(status().isCreated)
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.name").value("제주도 여행"))
+            .andExpect(jsonPath("$.type").value("TRAVEL"))
             .andExpect(jsonPath("$.startDate").value("2025-01-15"))
             .andExpect(jsonPath("$.endDate").value("2025-01-17"))
     }
@@ -37,6 +40,7 @@ class GatheringControllerTest : E2ETest() {
         // given
         val request = GatheringCreateRequest(
             name = "제주도 여행",
+            type = GatheringType.TRAVEL,
             startDate = LocalDate.of(2025, 1, 15),
             endDate = LocalDate.of(2025, 1, 17),
             participantNames = listOf("홍길동", "김철수", "이영희")
@@ -53,8 +57,8 @@ class GatheringControllerTest : E2ETest() {
     @DisplayName("모임 목록을 조회할 수 있다")
     fun findAll() {
         // given
-        createGathering("여행1")
-        createGathering("여행2")
+        createGathering("여행1", GatheringType.TRAVEL)
+        createGathering("회식", GatheringType.DINING)
 
         // when & then
         performGet("/api/gatherings")
@@ -66,13 +70,14 @@ class GatheringControllerTest : E2ETest() {
     @DisplayName("ID로 모임을 조회할 수 있다")
     fun findById() {
         // given
-        val gatheringId = createGathering("제주도 여행")
+        val gatheringId = createGathering("제주도 여행", GatheringType.TRAVEL)
 
         // when & then
         performGet("/api/gatherings/$gatheringId")
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(gatheringId))
             .andExpect(jsonPath("$.name").value("제주도 여행"))
+            .andExpect(jsonPath("$.type").value("TRAVEL"))
     }
 
     @Test
@@ -92,10 +97,11 @@ class GatheringControllerTest : E2ETest() {
     @DisplayName("모임 정보를 수정할 수 있다")
     fun update() {
         // given
-        val gatheringId = createGathering("원래 이름")
+        val gatheringId = createGathering("원래 이름", GatheringType.TRAVEL)
 
         val updateRequest = GatheringUpdateRequest(
             name = "수정된 이름",
+            type = GatheringType.DINING,
             startDate = LocalDate.of(2025, 2, 1),
             endDate = LocalDate.of(2025, 2, 5)
         )
@@ -104,6 +110,7 @@ class GatheringControllerTest : E2ETest() {
         performPatch("/api/gatherings/$gatheringId", updateRequest)
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.name").value("수정된 이름"))
+            .andExpect(jsonPath("$.type").value("DINING"))
             .andExpect(jsonPath("$.startDate").value("2025-02-01"))
             .andExpect(jsonPath("$.endDate").value("2025-02-05"))
     }
@@ -112,7 +119,7 @@ class GatheringControllerTest : E2ETest() {
     @DisplayName("모임을 삭제할 수 있다")
     fun delete() {
         // given
-        val gatheringId = createGathering("삭제할 모임")
+        val gatheringId = createGathering("삭제할 모임", GatheringType.MEETING)
 
         // when & then
         performDelete("/api/gatherings/$gatheringId")
@@ -136,9 +143,27 @@ class GatheringControllerTest : E2ETest() {
             .andExpect(jsonPath("$.meta.errorCode").value("GATHERING_NOT_FOUND"))
     }
 
-    private fun createGathering(name: String): Long {
+    @Test
+    @DisplayName("모임 타입 기본값은 OTHER이다")
+    fun createWithDefaultType() {
+        // given
+        val request = GatheringCreateRequest(
+            name = "기본 타입 모임",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1),
+            participantNames = null
+        )
+
+        // when & then
+        performPost("/api/gatherings", request)
+            .andExpect(status().isCreated)
+            .andExpect(jsonPath("$.type").value("OTHER"))
+    }
+
+    private fun createGathering(name: String, type: GatheringType = GatheringType.OTHER): Long {
         val request = GatheringCreateRequest(
             name = name,
+            type = type,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1),
             participantNames = null
