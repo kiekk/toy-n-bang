@@ -1,6 +1,7 @@
 package com.nbang.nbangapi.domain.exclusion
 
 import com.nbang.nbangapi.domain.gathering.GatheringService
+import com.nbang.nbangapi.domain.gathering.GatheringType
 import com.nbang.nbangapi.domain.participant.ParticipantService
 import com.nbang.nbangapi.domain.round.SettlementRoundService
 import com.nbang.nbangapi.support.IntegrationTest
@@ -29,6 +30,7 @@ class ExclusionServiceTest @Autowired constructor(
         val gathering = gatheringService.create(
             memberId = testMemberId,
             name = "테스트 모임",
+            type = GatheringType.OTHER,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )

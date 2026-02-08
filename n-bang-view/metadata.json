@@ -1,0 +1,5 @@
+{
+  "name": "N-Bang: Smart Settlement",
+  "description": "A sophisticated expense splitting application for trips and gatherings, supporting multi-round settlements, custom exclusions, and AI-powered summary generation.",
+  "requestFramePermissions": []
+}

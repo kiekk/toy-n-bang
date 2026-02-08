@@ -1,6 +1,7 @@
 package com.nbang.nbangapi.domain.round
 
 import com.nbang.nbangapi.domain.gathering.GatheringService
+import com.nbang.nbangapi.domain.gathering.GatheringType
 import com.nbang.nbangapi.domain.participant.ParticipantService
 import com.nbang.nbangapi.support.IntegrationTest
 import com.nbang.nbangapi.support.error.CoreException
@@ -29,6 +30,7 @@ class SettlementRoundServiceTest @Autowired constructor(
         val gathering = gatheringService.create(
             memberId = testMemberId,
             name = "테스트 모임",
+            type = GatheringType.OTHER,
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1)
         )
