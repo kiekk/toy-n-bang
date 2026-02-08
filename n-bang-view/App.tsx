@@ -420,7 +420,7 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-indigo-600 flex flex-col items-center justify-center p-6 animate-in fade-in duration-700">
         <div className="max-w-md w-full bg-white rounded-[48px] p-10 shadow-2xl space-y-10 text-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-20 h-20 bg-indigo-600 rounded-[28px] flex items-center justify-center text-white shadow-lg rotate-3">
+            <div className="w-20 h-20 bg-indigo-600 rounded-[28px] flex items-center justify-center text-white shadow-lg">
               <Layers size={40} />
             </div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">N-Bang</h1>
