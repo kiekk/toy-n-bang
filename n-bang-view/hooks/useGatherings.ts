@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { gatheringApi, participantApi, roundApi, calculationApi } from '../services/api';
+import { gatheringApi, participantApi, roundApi } from '../services/api';
 import type { Gathering, Participant, SettlementRound, Exclusion, GatheringType } from '../types';
 import {
   mapGatheringFromApi,

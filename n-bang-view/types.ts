@@ -46,7 +46,7 @@ export interface SettlementRound {
 // GatheringType (모임 타입)
 // ============================================
 
-export type GatheringType = 'travel' | 'dinner' | 'meeting' | 'date' | 'event' | 'hobby' | 'other';
+export type GatheringType = 'TRAVEL' | 'DINING' | 'MEETING' | 'DATE' | 'CEREMONY' | 'HOBBY' | 'OTHER';
 
 export interface GatheringTypeInfo {
   type: GatheringType;
@@ -55,13 +55,13 @@ export interface GatheringTypeInfo {
 }
 
 export const GATHERING_TYPES: GatheringTypeInfo[] = [
-  { type: 'travel', label: '여행', icon: '✈️' },
-  { type: 'dinner', label: '회식', icon: '🍻' },
-  { type: 'meeting', label: '모임', icon: '👥' },
-  { type: 'date', label: '데이트', icon: '💕' },
-  { type: 'event', label: '경조사', icon: '🎁' },
-  { type: 'hobby', label: '취미', icon: '⚽' },
-  { type: 'other', label: '기타', icon: '📝' },
+  { type: 'TRAVEL', label: '여행', icon: '✈️' },
+  { type: 'DINING', label: '회식', icon: '🍻' },
+  { type: 'MEETING', label: '모임', icon: '👥' },
+  { type: 'DATE', label: '데이트', icon: '💕' },
+  { type: 'CEREMONY', label: '경조사', icon: '🎁' },
+  { type: 'HOBBY', label: '취미', icon: '⚽' },
+  { type: 'OTHER', label: '기타', icon: '📝' },
 ];
 
 // ============================================
