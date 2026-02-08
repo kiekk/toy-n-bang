@@ -35,7 +35,7 @@ export const mapGatheringFromApi = (response: GatheringResponse): Gathering => {
   return {
     id: String(response.id),
     name: response.name,
-    type: (response.type as GatheringType) || 'other',
+    type: (response.type as GatheringType) || 'OTHER',
     startDate: new Date(response.startDate).getTime(),
     endDate: new Date(response.endDate).getTime(),
     createdAt: Date.now(), // API doesn't return this

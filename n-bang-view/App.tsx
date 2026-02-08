@@ -1,6 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Users,
   Receipt,
@@ -27,15 +26,12 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import * as htmlToImage from 'html-to-image';
-import { Participant, SettlementRound, UserBalance, DebtLink, Gathering, Exclusion, GatheringType, GATHERING_TYPES } from './types.ts';
+import { Participant, SettlementRound, DebtLink, Gathering, Exclusion, GatheringType, GATHERING_TYPES } from './types.ts';
 import { calculateBalances, resolveDebts } from './utils/calculator.ts';
-import { generateKakaoMessage } from './services/geminiService.ts';
+import { generateKakaoMessage } from './services/messageService.ts';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useToast } from './contexts/ToastContext.tsx';
 import { useGatherings } from './hooks';
-
-const REASON_SUGGESTIONS = ['늦게 옴', '2차에서 합류', '술 안마심', '먼저 감', '안 먹음', '기타'];
 
 // Vibrant, accessible color palette for gathering timeline bars
 const GATHERING_COLORS = [
@@ -85,7 +81,7 @@ const App: React.FC = () => {
   // UI State
   const [isCreatingGathering, setIsCreatingGathering] = useState(false);
   const [newGatheringName, setNewGatheringName] = useState('');
-  const [newGatheringType, setNewGatheringType] = useState<GatheringType>('meeting');
+  const [newGatheringType, setNewGatheringType] = useState<GatheringType>('MEETING');
   const [startDateStr, setStartDateStr] = useState(new Date().toISOString().split('T')[0]);
   const [endDateStr, setEndDateStr] = useState(new Date().toISOString().split('T')[0]);
 
@@ -96,8 +92,7 @@ const App: React.FC = () => {
   const [newParticipantName, setNewParticipantName] = useState('');
   const [kakaoMessage, setKakaoMessage] = useState('');
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
-  const [isCapturing, setIsCapturing] = useState(false);
-  
+
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [isImporting, setIsImporting] = useState(false);
@@ -112,8 +107,6 @@ const App: React.FC = () => {
 
   // 버림 단위 (1 = 버림 없음, 10, 100, 1000, 10000)
   const [roundingUnit, setRoundingUnit] = useState<number>(1);
-
-  const resultRef = useRef<HTMLDivElement>(null);
 
   // Persistence (only directory - gatherings are now on server)
   useEffect(() => {
@@ -190,7 +183,7 @@ const App: React.FC = () => {
     if (newG) {
       setActiveGatheringId(newG.id);
       setNewGatheringName('');
-      setNewGatheringType('meeting');
+      setNewGatheringType('MEETING');
       setNameError('');
       setDateError('');
       setIsCreatingGathering(false);
@@ -420,7 +413,7 @@ const App: React.FC = () => {
               <Layers size={40} />
             </div>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">N-Bang</h1>
-            <p className="text-slate-500 font-medium leading-relaxed px-4">더 이상의 머리 아픈 정산은 그만.<br/>스마트한 AI와 함께하는 간편 정산 서비스</p>
+            <p className="text-slate-500 font-medium leading-relaxed px-4">더 이상의 머리 아픈 정산은 그만.<br/>N빵으로 쉽게, 정확하게</p>
           </div>
           <div className="space-y-4">
             <button onClick={() => login('kakao')} className="w-full bg-[#FEE500] text-[#191919] rounded-2xl py-4 font-black flex items-center justify-center gap-3 hover:opacity-90 transition-all shadow-md active:scale-95">
@@ -630,6 +623,7 @@ const App: React.FC = () => {
                       <input
                         type="date"
                         value={startDateStr}
+                        max="9999-12-31"
                         onChange={(e) => { setStartDateStr(e.target.value); setDateError(''); }}
                         className={`w-full bg-slate-50 border rounded-2xl px-5 py-4 font-bold text-sm ${
                           dateError ? 'border-red-400' : 'border-slate-200'
@@ -641,6 +635,7 @@ const App: React.FC = () => {
                       <input
                         type="date"
                         value={endDateStr}
+                        max="9999-12-31"
                         onChange={(e) => { setEndDateStr(e.target.value); setDateError(''); }}
                         className={`w-full bg-slate-50 border rounded-2xl px-5 py-4 font-bold text-sm ${
                           dateError ? 'border-red-400' : 'border-slate-200'
