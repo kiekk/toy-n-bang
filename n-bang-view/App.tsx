@@ -447,6 +447,7 @@ const App: React.FC = () => {
   // Home View
   if (!activeGatheringId) {
     return (
+      <>
       <div className="min-h-screen bg-slate-50 p-6 md:p-12 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-500 pb-32">
         {/* Error Banner */}
         {dataError && (
@@ -582,100 +583,102 @@ const App: React.FC = () => {
            </div>
         )}
 
-        {/* Modal: Create Gathering with Adjusted Button Widths */}
-        {isCreatingGathering && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto" onClick={() => setIsCreatingGathering(false)}>
-            <div className="bg-white rounded-3xl sm:rounded-[48px] p-6 sm:p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-auto" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-2xl sm:text-3xl font-black mb-6 sm:mb-8 text-slate-900 tracking-tight">새로운 정산 시작</h2>
-              <div className="space-y-5 sm:space-y-6 mb-8 sm:mb-12">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">모임 타입</label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {GATHERING_TYPES.map((gt) => (
-                      <button
-                        key={gt.type}
-                        type="button"
-                        onClick={() => setNewGatheringType(gt.type)}
-                        className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all ${
-                          newGatheringType === gt.type
-                            ? 'border-indigo-500 bg-indigo-50'
-                            : 'border-slate-100 bg-slate-50 hover:border-slate-200'
-                        }`}
-                      >
-                        <span className="text-2xl">{gt.icon}</span>
-                        <span className={`text-xs font-bold ${newGatheringType === gt.type ? 'text-indigo-600' : 'text-slate-500'}`}>{gt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">모임 이름</label>
-                  <input
-                    type="text"
-                    value={newGatheringName}
-                    onChange={(e) => { setNewGatheringName(e.target.value); setNameError(''); }}
-                    placeholder="예: 제주도 여행, 송년회"
-                    className={`w-full bg-slate-50 border rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 text-lg font-bold ${
-                      nameError
-                        ? 'border-red-400 focus:ring-red-500/10 focus:border-red-500'
-                        : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500'
-                    }`}
-                  />
-                  {nameError && (
-                    <p className="text-red-500 text-xs font-bold px-1 flex items-center gap-1">
-                      <AlertCircle size={12} /> {nameError}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">시작일</label>
-                      <input
-                        type="date"
-                        value={startDateStr}
-                        max="9999-12-31"
-                        onChange={(e) => { setStartDateStr(e.target.value); setDateError(''); }}
-                        className={`w-full bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
-                          dateError ? 'border-red-400' : 'border-slate-200'
-                        }`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">종료일</label>
-                      <input
-                        type="date"
-                        value={endDateStr}
-                        max="9999-12-31"
-                        onChange={(e) => { setEndDateStr(e.target.value); setDateError(''); }}
-                        className={`w-full bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
-                          dateError ? 'border-red-400' : 'border-slate-200'
-                        }`}
-                      />
-                    </div>
-                  </div>
-                  {dateError && (
-                    <p className="text-red-500 text-xs font-bold px-1 flex items-center gap-1">
-                      <AlertCircle size={12} /> {dateError}
-                    </p>
-                  )}
+      </div>
+
+      {/* Modal: Create Gathering - rendered outside animated parent for proper fixed positioning */}
+      {isCreatingGathering && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto" onClick={() => setIsCreatingGathering(false)}>
+          <div className="bg-white rounded-3xl sm:rounded-[48px] p-6 sm:p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 my-auto" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-2xl sm:text-3xl font-black mb-6 sm:mb-8 text-slate-900 tracking-tight">새로운 정산 시작</h2>
+            <div className="space-y-5 sm:space-y-6 mb-8 sm:mb-12">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">모임 타입</label>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {GATHERING_TYPES.map((gt) => (
+                    <button
+                      key={gt.type}
+                      type="button"
+                      onClick={() => setNewGatheringType(gt.type)}
+                      className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all ${
+                        newGatheringType === gt.type
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-slate-100 bg-slate-50 hover:border-slate-200'
+                      }`}
+                    >
+                      <span className="text-2xl">{gt.icon}</span>
+                      <span className={`text-xs font-bold ${newGatheringType === gt.type ? 'text-indigo-600' : 'text-slate-500'}`}>{gt.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="flex gap-4">
-                {/* Wider Create Button (2/3) and Smaller Cancel Button (1/3) */}
-                <button onClick={() => setIsCreatingGathering(false)} className="w-1/3 bg-slate-100 text-slate-500 py-5 rounded-[24px] font-black hover:bg-slate-200 transition-all active:scale-95 shadow-sm">취소</button>
-                <button onClick={createGathering} className="w-2/3 bg-indigo-600 text-white py-5 rounded-[24px] font-black hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95">모임 생성</button>
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">모임 이름</label>
+                <input
+                  type="text"
+                  value={newGatheringName}
+                  onChange={(e) => { setNewGatheringName(e.target.value); setNameError(''); }}
+                  placeholder="예: 제주도 여행, 송년회"
+                  className={`w-full bg-slate-50 border rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 text-lg font-bold ${
+                    nameError
+                      ? 'border-red-400 focus:ring-red-500/10 focus:border-red-500'
+                      : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500'
+                  }`}
+                />
+                {nameError && (
+                  <p className="text-red-500 text-xs font-bold px-1 flex items-center gap-1">
+                    <AlertCircle size={12} /> {nameError}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-hidden">
+                  <div className="space-y-2 min-w-0">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">시작일</label>
+                    <input
+                      type="date"
+                      value={startDateStr}
+                      max="9999-12-31"
+                      onChange={(e) => { setStartDateStr(e.target.value); setDateError(''); }}
+                      className={`w-full min-w-0 bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
+                        dateError ? 'border-red-400' : 'border-slate-200'
+                      }`}
+                    />
+                  </div>
+                  <div className="space-y-2 min-w-0">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">종료일</label>
+                    <input
+                      type="date"
+                      value={endDateStr}
+                      max="9999-12-31"
+                      onChange={(e) => { setEndDateStr(e.target.value); setDateError(''); }}
+                      className={`w-full min-w-0 bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
+                        dateError ? 'border-red-400' : 'border-slate-200'
+                      }`}
+                    />
+                  </div>
+                </div>
+                {dateError && (
+                  <p className="text-red-500 text-xs font-bold px-1 flex items-center gap-1">
+                    <AlertCircle size={12} /> {dateError}
+                  </p>
+                )}
               </div>
             </div>
+            <div className="flex gap-4">
+              {/* Wider Create Button (2/3) and Smaller Cancel Button (1/3) */}
+              <button onClick={() => setIsCreatingGathering(false)} className="w-1/3 bg-slate-100 text-slate-500 py-5 rounded-[24px] font-black hover:bg-slate-200 transition-all active:scale-95 shadow-sm">취소</button>
+              <button onClick={createGathering} className="w-2/3 bg-indigo-600 text-white py-5 rounded-[24px] font-black hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95">모임 생성</button>
+            </div>
           </div>
-        )}
-      </div>
-    );
+        </div>
+      )}
+    </>
+  );
   }
 
   // Active Gathering Detail View (Remains same but handles the active gathering state)
   return (
-    <div className="min-h-screen pb-24 lg:pb-0 lg:pl-72 bg-slate-50">
+    <div className="h-screen lg:pl-72 bg-slate-50 flex flex-col">
       <nav className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-72 bg-white border-r border-slate-200 p-8 z-10">
         <button onClick={() => setActiveGatheringId(null)} className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-black mb-10 transition-colors text-sm"><ChevronLeft size={20} /> 전체 목록</button>
         <div className="mb-12">
@@ -708,7 +711,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto p-4 sm:p-6 md:p-12">
+      <main className="flex-1 overflow-y-auto max-w-4xl mx-auto w-full p-4 sm:p-6 md:p-12 pb-24 lg:pb-6">
         {/* Mobile header - back button + gathering info */}
         <div className="lg:hidden mb-6">
           <button onClick={() => setActiveGatheringId(null)} className="flex items-center gap-1 text-slate-400 hover:text-indigo-600 font-black text-sm transition-colors mb-3"><ChevronLeft size={18} /> 전체 목록</button>
