@@ -42,6 +42,8 @@ class SecurityConfig(
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/oauth2/**", "/login/**").permitAll()
                     .requestMatchers("/api/v1/auth/**").permitAll()
+                    // 공유 링크 (인증 불필요)
+                    .requestMatchers("/api/shared/**").permitAll()
                     // Swagger (if needed)
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     // All other requests require authentication
