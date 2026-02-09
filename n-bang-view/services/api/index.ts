@@ -10,6 +10,7 @@ export { authApi } from './authApi';
 export { gatheringApi } from './gatheringApi';
 export { participantApi } from './participantApi';
 export { roundApi } from './roundApi';
+export { shareApi } from './shareApi';
 
 // Types
 export type {
@@ -34,4 +35,7 @@ export type {
   RoundCreateRequest,
   RoundUpdateRequest,
   ExclusionRequest,
+  // Share
+  SharedSettlementLinkResponse,
+  SharedSettlementResponse,
 } from './types';
