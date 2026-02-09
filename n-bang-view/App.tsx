@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   LogOut,
   AlertCircle,
-  Loader2
+  Loader2,
+  Link2
 } from 'lucide-react';
 import { Participant, SettlementRound, DebtLink, Gathering, Exclusion, GatheringType, GATHERING_TYPES } from './types.ts';
 import { calculateBalances, resolveDebts } from './utils/calculator.ts';
@@ -32,6 +33,7 @@ import { generateKakaoMessage } from './services/messageService.ts';
 import { useAuth } from './contexts/AuthContext.tsx';
 import { useToast } from './contexts/ToastContext.tsx';
 import { useGatherings } from './hooks';
+import { shareApi } from './services/api';
 
 // Vibrant, accessible color palette for gathering timeline bars
 const GATHERING_COLORS = [
@@ -59,6 +61,7 @@ const App: React.FC = () => {
     isLoading: isDataLoading,
     error: dataError,
     createGathering: apiCreateGathering,
+    updateGathering: apiUpdateGathering,
     deleteGathering: apiDeleteGathering,
     addParticipant: apiAddParticipant,
     removeParticipant: apiRemoveParticipant,
@@ -107,6 +110,13 @@ const App: React.FC = () => {
 
   // 버림 단위 (1 = 버림 없음, 10, 100, 1000, 10000)
   const [roundingUnit, setRoundingUnit] = useState<number>(1);
+
+  // 모임 타입 수정
+  const [isEditingType, setIsEditingType] = useState(false);
+
+  // 공유 링크
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [isCreatingShareLink, setIsCreatingShareLink] = useState(false);
 
   // Persistence (only directory - gatherings are now on server)
   useEffect(() => {
@@ -683,6 +693,39 @@ const App: React.FC = () => {
         <button onClick={() => setActiveGatheringId(null)} className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-black mb-10 transition-colors text-sm"><ChevronLeft size={20} /> 전체 목록</button>
         <div className="mb-12">
           <h1 className="text-2xl font-black text-slate-900 leading-tight mb-2 truncate pr-2">{activeGathering.name}</h1>
+          <div className="relative mb-2">
+            <button onClick={() => setIsEditingType(!isEditingType)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 transition-all text-sm">
+              <span>{GATHERING_TYPES.find(gt => gt.type === activeGathering.type)?.icon || '📝'}</span>
+              <span className="font-bold text-slate-600">{GATHERING_TYPES.find(gt => gt.type === activeGathering.type)?.label || '기타'}</span>
+              <Edit2 size={12} className="text-slate-400" />
+            </button>
+            {isEditingType && (
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-3 z-20 w-56">
+                <div className="grid grid-cols-3 gap-1.5">
+                  {GATHERING_TYPES.map((gt) => (
+                    <button
+                      key={gt.type}
+                      onClick={async () => {
+                        if (gt.type !== activeGathering.type) {
+                          const startStr = new Date(activeGathering.startDate).toISOString().split('T')[0];
+                          const endStr = new Date(activeGathering.endDate).toISOString().split('T')[0];
+                          const result = await apiUpdateGathering(activeGathering.id, activeGathering.name, gt.type, startStr, endStr);
+                          if (result) showToast('success', '모임 타입이 변경되었습니다.');
+                        }
+                        setIsEditingType(false);
+                      }}
+                      className={`flex flex-col items-center gap-0.5 p-2 rounded-xl border transition-all ${
+                        activeGathering.type === gt.type ? 'border-indigo-500 bg-indigo-50' : 'border-transparent hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-lg">{gt.icon}</span>
+                      <span className={`text-[10px] font-bold ${activeGathering.type === gt.type ? 'text-indigo-600' : 'text-slate-500'}`}>{gt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><CalendarIcon size={12} /> {new Date(activeGathering.startDate).toLocaleDateString()} ~</div>
         </div>
         <div className="space-y-3 flex-1">
@@ -715,7 +758,12 @@ const App: React.FC = () => {
         {/* Mobile header - back button + gathering info */}
         <div className="lg:hidden mb-6">
           <button onClick={() => setActiveGatheringId(null)} className="flex items-center gap-1 text-slate-400 hover:text-indigo-600 font-black text-sm transition-colors mb-3"><ChevronLeft size={18} /> 전체 목록</button>
-          <h1 className="text-lg font-black text-slate-900 truncate">{activeGathering.name}</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-lg font-black text-slate-900 truncate">{activeGathering.name}</h1>
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 text-xs font-bold text-slate-500 flex-shrink-0">
+              {GATHERING_TYPES.find(gt => gt.type === activeGathering.type)?.icon || '📝'} {GATHERING_TYPES.find(gt => gt.type === activeGathering.type)?.label || '기타'}
+            </span>
+          </div>
           <p className="text-xs font-bold text-slate-400">{new Date(activeGathering.startDate).toLocaleDateString()} ~ {new Date(activeGathering.endDate).toLocaleDateString()}</p>
         </div>
         {activeTab === 'participants' && (
@@ -931,13 +979,49 @@ const App: React.FC = () => {
              </div>
 
              <div className="space-y-6 sm:space-y-8 pb-10">
-               <button onClick={() => {
-                  const message = generateKakaoMessage(activeGathering.name, activeGathering.participants, activeGathering.rounds, calculationResult.debts);
-                  setKakaoMessage(message);
-               }} className={`w-full ${activeGathering.color || 'bg-indigo-600'} text-white rounded-2xl sm:rounded-[40px] py-6 sm:py-10 font-black text-lg sm:text-3xl flex items-center justify-center gap-3 sm:gap-5 hover:brightness-110 shadow-2xl transition-all active:scale-[0.98]`}>
-                 <Copy size={24} />
-                 카카오톡 공유 메시지 생성
-               </button>
+               <div className="flex flex-col sm:flex-row gap-4">
+                 <button onClick={() => {
+                    const message = generateKakaoMessage(activeGathering.name, activeGathering.participants, activeGathering.rounds, calculationResult.debts);
+                    setKakaoMessage(message);
+                 }} className={`flex-1 ${activeGathering.color || 'bg-indigo-600'} text-white rounded-2xl sm:rounded-[40px] py-6 sm:py-10 font-black text-lg sm:text-3xl flex items-center justify-center gap-3 sm:gap-5 hover:brightness-110 shadow-2xl transition-all active:scale-[0.98]`}>
+                   <Copy size={24} />
+                   카카오톡 메시지
+                 </button>
+                 <button
+                   onClick={async () => {
+                     if (!activeGatheringId) return;
+                     setIsCreatingShareLink(true);
+                     try {
+                       const result = await shareApi.createShareLink(Number(activeGatheringId));
+                       const link = `${window.location.origin}/shared/${result.uuid}`;
+                       setShareLink(link);
+                     } catch {
+                       showToast('error', '공유 링크 생성에 실패했습니다.');
+                     } finally {
+                       setIsCreatingShareLink(false);
+                     }
+                   }}
+                   disabled={isCreatingShareLink}
+                   className="flex-1 bg-emerald-600 text-white rounded-2xl sm:rounded-[40px] py-6 sm:py-10 font-black text-lg sm:text-3xl flex items-center justify-center gap-3 sm:gap-5 hover:brightness-110 shadow-2xl transition-all active:scale-[0.98] disabled:opacity-50"
+                 >
+                   <Link2 size={24} />
+                   {isCreatingShareLink ? '생성 중...' : '공유 링크'}
+                 </button>
+               </div>
+
+               {shareLink && (
+                 <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm animate-in slide-in-from-bottom-10 duration-700">
+                   <h3 className="text-xl font-black mb-2">공유 링크가 생성되었습니다</h3>
+                   <p className="text-sm text-slate-500 mb-4">24시간 동안 유효하며, 로그인 없이 접근할 수 있습니다.</p>
+                   <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-5 py-4 border border-slate-200">
+                     <input type="text" value={shareLink} readOnly className="flex-1 bg-transparent font-mono text-sm truncate outline-none" />
+                     <button onClick={() => { navigator.clipboard.writeText(shareLink); showToast('success', '링크가 복사되었습니다.'); }} className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black text-sm active:scale-95 flex-shrink-0">
+                       복사
+                     </button>
+                   </div>
+                   <button onClick={() => setShareLink(null)} className="mt-3 text-sm font-bold text-slate-400 hover:text-slate-600">닫기</button>
+                 </div>
+               )}
 
                {kakaoMessage && (
                  <div className={`${activeGathering.color || 'bg-indigo-600'} p-6 sm:p-14 rounded-3xl sm:rounded-[72px] text-white shadow-2xl shadow-indigo-100 animate-in slide-in-from-bottom-10 duration-700`}>
