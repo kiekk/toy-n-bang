@@ -67,6 +67,7 @@ export interface GatheringCreateRequest {
 
 export interface GatheringUpdateRequest {
   name: string;
+  type: string;
   startDate: string;
   endDate: string;
 }
@@ -148,4 +149,22 @@ export interface DebtResponse {
   from: string;
   to: string;
   amount: number;
+}
+
+// ============================================
+// Share Types
+// ============================================
+
+export interface SharedSettlementLinkResponse {
+  uuid: string;
+  expiresAt: string;
+}
+
+export interface SharedSettlementResponse {
+  gatheringName: string;
+  gatheringType: string;
+  totalAmount: number;
+  balances: UserBalanceResponse[];
+  debts: DebtResponse[];
+  expiresAt: string;
 }

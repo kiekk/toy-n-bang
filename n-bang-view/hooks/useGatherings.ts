@@ -15,6 +15,7 @@ interface UseGatheringsReturn {
   // Gathering operations
   fetchGatherings: () => Promise<void>;
   createGathering: (name: string, type: GatheringType, startDate: string, endDate: string) => Promise<Gathering | null>;
+  updateGathering: (id: string, name: string, type: GatheringType, startDate: string, endDate: string) => Promise<Gathering | null>;
   deleteGathering: (id: string) => Promise<boolean>;
   // Participant operations
   addParticipant: (gatheringId: string, name: string) => Promise<Participant | null>;
@@ -80,6 +81,27 @@ export const useGatherings = (isAuthenticated: boolean): UseGatheringsReturn => 
     } catch (err) {
       setError('모임 생성에 실패했습니다.');
       console.error('Failed to create gathering:', err);
+      return null;
+    }
+  }, []);
+
+  // Update gathering
+  const updateGathering = useCallback(async (
+    id: string,
+    name: string,
+    type: GatheringType,
+    startDate: string,
+    endDate: string
+  ): Promise<Gathering | null> => {
+    try {
+      const request = { name, type, startDate, endDate };
+      const response = await gatheringApi.update(Number(id), request);
+      const mapped = mapGatheringFromApi(response);
+      setGatherings(prev => prev.map(g => g.id === id ? { ...mapped, color: g.color } : g));
+      return mapped;
+    } catch (err) {
+      setError('모임 수정에 실패했습니다.');
+      console.error('Failed to update gathering:', err);
       return null;
     }
   }, []);
@@ -276,6 +298,7 @@ export const useGatherings = (isAuthenticated: boolean): UseGatheringsReturn => 
     error,
     fetchGatherings,
     createGathering,
+    updateGathering,
     deleteGathering,
     addParticipant,
     removeParticipant,
