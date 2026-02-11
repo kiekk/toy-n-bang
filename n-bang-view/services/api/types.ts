@@ -166,5 +166,6 @@ export interface SharedSettlementResponse {
   totalAmount: number;
   balances: UserBalanceResponse[];
   debts: DebtResponse[];
+  rounds: RoundResponse[];
   expiresAt: string;
 }

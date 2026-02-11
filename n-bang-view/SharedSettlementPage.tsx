@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { shareApi } from './services/api/shareApi';
 import type { SharedSettlementResponse } from './services/api/types';
-import { Users, ArrowRightLeft, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
+import { Users, ArrowRightLeft, AlertCircle, Loader2, ChevronRight, Receipt, UserMinus } from 'lucide-react';
 import { GATHERING_TYPES } from './types';
 
 interface SharedSettlementPageProps {
@@ -130,10 +130,45 @@ const SharedSettlementPage: React.FC<SharedSettlementPageProps> = ({ uuid }) => 
           </section>
         </div>
 
+        {/* Expense History */}
+        {data.rounds.length > 0 && (
+          <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12 mt-6 sm:mt-10">
+            <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4">
+              <Receipt className="text-indigo-600" size={28} /> 지출 내역
+            </h3>
+            <div className="space-y-4 sm:space-y-6">
+              {data.rounds.map(round => (
+                <div key={round.id} className="p-4 sm:p-7 bg-slate-50 rounded-2xl sm:rounded-[32px] border border-transparent hover:border-indigo-100 hover:bg-white transition-all shadow-sm">
+                  <div className="flex items-start justify-between gap-3 sm:gap-4">
+                    <div className="min-w-0">
+                      <p className="font-black text-slate-800 text-base sm:text-xl">{round.title}</p>
+                      <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-2 sm:mt-3">결제 {round.payerName}</p>
+                    </div>
+                    <p className="text-lg sm:text-2xl font-black text-indigo-600 whitespace-nowrap flex-shrink-0">
+                      {round.amount.toLocaleString()}원
+                    </p>
+                  </div>
+                  {round.exclusions.length > 0 && (
+                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 flex flex-wrap items-center gap-2">
+                      <UserMinus size={14} className="text-orange-500" />
+                      <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">제외</span>
+                      {round.exclusions.map(e => (
+                        <span key={e.id} className="bg-orange-100 text-orange-600 px-2 py-1 rounded-lg text-xs font-bold">
+                          {e.participantName}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Footer */}
         <footer className="text-center mt-10 sm:mt-16 pb-10">
           <p className="text-xs text-slate-400 font-bold">
-            이 링크는 24시간 동안 유효합니다.
+            이 링크는 {new Date(data.expiresAt).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}까지 유효합니다.
           </p>
           <a href="/" className="inline-block mt-4 text-indigo-600 font-black text-sm hover:underline">
             N빵으로 나도 정산하기
