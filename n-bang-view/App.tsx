@@ -115,7 +115,7 @@ const App: React.FC = () => {
   const [isEditingType, setIsEditingType] = useState(false);
 
   // 공유 링크
-  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<{ url: string; expiresAt: string } | null>(null);
   const [isCreatingShareLink, setIsCreatingShareLink] = useState(false);
 
   // Persistence (only directory - gatherings are now on server)
@@ -994,7 +994,7 @@ const App: React.FC = () => {
                      try {
                        const result = await shareApi.createShareLink(Number(activeGatheringId));
                        const link = `${window.location.origin}/shared/${result.uuid}`;
-                       setShareLink(link);
+                       setShareLink({ url: link, expiresAt: result.expiresAt });
                      } catch {
                        showToast('error', '공유 링크 생성에 실패했습니다.');
                      } finally {
@@ -1012,10 +1012,12 @@ const App: React.FC = () => {
                {shareLink && (
                  <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm animate-in slide-in-from-bottom-10 duration-700">
                    <h3 className="text-xl font-black mb-2">공유 링크가 생성되었습니다</h3>
-                   <p className="text-sm text-slate-500 mb-4">24시간 동안 유효하며, 로그인 없이 접근할 수 있습니다.</p>
+                   <p className="text-sm text-slate-500 mb-4">
+                     {new Date(shareLink.expiresAt).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}까지 유효하며, 로그인 없이 접근할 수 있습니다.
+                   </p>
                    <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-5 py-4 border border-slate-200">
-                     <input type="text" value={shareLink} readOnly className="flex-1 bg-transparent font-mono text-sm truncate outline-none" />
-                     <button onClick={() => { navigator.clipboard.writeText(shareLink); showToast('success', '링크가 복사되었습니다.'); }} className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black text-sm active:scale-95 flex-shrink-0">
+                     <input type="text" value={shareLink.url} readOnly className="flex-1 bg-transparent font-mono text-sm truncate outline-none" />
+                     <button onClick={() => { navigator.clipboard.writeText(shareLink.url); showToast('success', '링크가 복사되었습니다.'); }} className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black text-sm active:scale-95 flex-shrink-0">
                        복사
                      </button>
                    </div>
