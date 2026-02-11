@@ -641,7 +641,7 @@ const App: React.FC = () => {
                 )}
               </div>
               <div className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-hidden">
+                <div className="grid grid-cols-2 gap-3 overflow-hidden">
                   <div className="space-y-2 min-w-0">
                     <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">시작일</label>
                     <input
@@ -649,7 +649,7 @@ const App: React.FC = () => {
                       value={startDateStr}
                       max="9999-12-31"
                       onChange={(e) => { setStartDateStr(e.target.value); setDateError(''); }}
-                      className={`w-full min-w-0 bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
+                      className={`w-full min-w-0 bg-slate-50 border rounded-2xl px-3 py-3 sm:py-4 font-bold text-sm ${
                         dateError ? 'border-red-400' : 'border-slate-200'
                       }`}
                     />
@@ -661,7 +661,7 @@ const App: React.FC = () => {
                       value={endDateStr}
                       max="9999-12-31"
                       onChange={(e) => { setEndDateStr(e.target.value); setDateError(''); }}
-                      className={`w-full min-w-0 bg-slate-50 border rounded-2xl px-4 sm:px-5 py-3 sm:py-4 font-bold text-sm ${
+                      className={`w-full min-w-0 bg-slate-50 border rounded-2xl px-3 py-3 sm:py-4 font-bold text-sm ${
                         dateError ? 'border-red-400' : 'border-slate-200'
                       }`}
                     />
@@ -726,7 +726,7 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><CalendarIcon size={12} /> {new Date(activeGathering.startDate).toLocaleDateString()} ~</div>
+          <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest"><CalendarIcon size={12} /> {new Date(activeGathering.startDate).toLocaleDateString()} ~ {new Date(activeGathering.endDate).toLocaleDateString()}</div>
         </div>
         <div className="space-y-3 flex-1">
           <NavItem active={activeTab === 'participants'} onClick={() => setActiveTab('participants')} icon={<Users size={22} />} label="참여자" count={activeGathering.participants.length} />
