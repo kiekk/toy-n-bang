@@ -27,4 +27,8 @@ enum class ErrorType(val status: HttpStatus, val code: String, val message: Stri
 
     /** 정산 라운드 관련 에러 */
     ROUND_NOT_FOUND(HttpStatus.NOT_FOUND, "ROUND_NOT_FOUND", "정산 라운드를 찾을 수 없습니다."),
+
+    /** 공유 링크 관련 에러 */
+    SHARED_LINK_NOT_FOUND(HttpStatus.NOT_FOUND, "SHARED_LINK_NOT_FOUND", "공유 링크를 찾을 수 없습니다."),
+    SHARED_LINK_EXPIRED(HttpStatus.valueOf(410), "SHARED_LINK_EXPIRED", "만료된 공유 링크입니다."),
 }
