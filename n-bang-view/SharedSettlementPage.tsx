@@ -131,7 +131,7 @@ const SharedSettlementPage: React.FC<SharedSettlementPageProps> = ({ uuid }) => 
         </div>
 
         {/* Expense History */}
-        {data.rounds.length > 0 && (
+        {data.rounds && data.rounds.length > 0 && (
           <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12 mt-6 sm:mt-10">
             <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4">
               <Receipt className="text-indigo-600" size={28} /> 지출 내역
