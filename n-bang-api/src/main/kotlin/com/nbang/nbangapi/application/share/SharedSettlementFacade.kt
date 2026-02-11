@@ -1,6 +1,7 @@
 package com.nbang.nbangapi.application.share
 
 import com.nbang.nbangapi.application.calculation.CalculationFacade
+import com.nbang.nbangapi.application.round.SettlementRoundFacade
 import com.nbang.nbangapi.application.share.response.SharedSettlementLinkResponse
 import com.nbang.nbangapi.application.share.response.SharedSettlementResponse
 import com.nbang.nbangapi.domain.gathering.GatheringService
@@ -14,6 +15,7 @@ class SharedSettlementFacade(
     private val sharedSettlementLinkService: SharedSettlementLinkService,
     private val gatheringService: GatheringService,
     private val calculationFacade: CalculationFacade,
+    private val roundFacade: SettlementRoundFacade,
 ) {
     @Transactional
     fun createShareLink(gatheringId: Long, memberId: Long): SharedSettlementLinkResponse {
@@ -29,6 +31,7 @@ class SharedSettlementFacade(
         val link = sharedSettlementLinkService.findByUuid(uuid)
         val gathering = gatheringService.findById(link.gatheringId)
         val calculation = calculationFacade.calculate(link.gatheringId)
+        val rounds = roundFacade.findByGatheringId(link.gatheringId)
 
         return SharedSettlementResponse(
             gatheringName = gathering.name,
@@ -36,6 +39,7 @@ class SharedSettlementFacade(
             totalAmount = calculation.totalAmount,
             balances = calculation.balances,
             debts = calculation.debts,
+            rounds = rounds,
             expiresAt = link.expiresAt.toString()
         )
     }
