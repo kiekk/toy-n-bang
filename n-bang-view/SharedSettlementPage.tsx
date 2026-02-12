@@ -80,59 +80,9 @@ const SharedSettlementPage: React.FC<SharedSettlementPageProps> = ({ uuid }) => 
           </p>
         </header>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10">
-          {/* Member Summary */}
-          <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12">
-            <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4">
-              <Users className="text-indigo-600" size={28} /> 멤버별 요약
-            </h3>
-            <div className="space-y-4 sm:space-y-6">
-              {data.balances.map(b => (
-                <div key={b.participantId} className="flex items-start justify-between gap-3 sm:gap-4 p-4 sm:p-7 bg-slate-50 rounded-2xl sm:rounded-[32px] border border-transparent hover:border-indigo-100 hover:bg-white transition-all shadow-sm">
-                  <div className="min-w-0">
-                    <p className="font-black text-slate-800 text-base sm:text-xl truncate">{b.name}</p>
-                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-2 sm:mt-5 whitespace-nowrap">지불 {b.totalPaid.toLocaleString()}원</p>
-                  </div>
-                  <p className={`text-lg sm:text-2xl font-black whitespace-nowrap flex-shrink-0 ${b.netBalance > 0 ? 'text-green-600' : b.netBalance < 0 ? 'text-red-500' : 'text-slate-400'}`}>
-                    {b.netBalance > 0 ? '+' : ''}{Math.round(b.netBalance).toLocaleString()}원
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Transfer Guide */}
-          <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12 flex flex-col">
-            <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4">
-              <ArrowRightLeft className="text-indigo-600" size={28} /> 송금 가이드
-            </h3>
-            <div className="space-y-4 sm:space-y-6 flex-1">
-              {data.debts.map((d, i) => (
-                <div key={i} className="p-4 sm:p-6 bg-indigo-50/40 border-indigo-50 border-2 rounded-2xl sm:rounded-[32px] shadow-sm">
-                  <div className="flex items-center justify-center gap-4 sm:gap-6 mb-3 sm:mb-4">
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">보낼 사람</span>
-                      <span className="font-black text-slate-700 text-base sm:text-lg">{d.from}</span>
-                    </div>
-                    <ChevronRight className="text-indigo-400 flex-shrink-0 mt-4" size={20} />
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">받는 사람</span>
-                      <span className="font-black text-slate-700 text-base sm:text-lg">{d.to}</span>
-                    </div>
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-center text-indigo-600">
-                    {Math.round(d.amount).toLocaleString()}원
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
         {/* Expense History */}
         {data.rounds && data.rounds.length > 0 && (
-          <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12 mt-6 sm:mt-10">
+          <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12 mb-6 sm:mb-10">
             <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4">
               <Receipt className="text-indigo-600" size={28} /> 지출 내역
             </h3>
@@ -162,8 +112,60 @@ const SharedSettlementPage: React.FC<SharedSettlementPageProps> = ({ uuid }) => 
                 </div>
               ))}
             </div>
+            {/* Total Amount */}
+            <div className="mt-6 sm:mt-10 pt-6 sm:pt-8 border-t-2 border-slate-100 flex items-center justify-between">
+              <span className="text-lg sm:text-xl font-black text-slate-600">총 합계</span>
+              <span className="text-2xl sm:text-3xl font-black text-indigo-600">{data.totalAmount.toLocaleString()}원</span>
+            </div>
           </section>
         )}
+
+        {/* Member Summary */}
+        <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12 mb-6 sm:mb-10">
+          <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4">
+            <Users className="text-indigo-600" size={28} /> 멤버별 지출 금액
+          </h3>
+          <div className="space-y-4 sm:space-y-6">
+            {data.balances.map(b => (
+              <div key={b.participantId} className="flex items-start justify-between gap-3 sm:gap-4 p-4 sm:p-7 bg-slate-50 rounded-2xl sm:rounded-[32px] border border-transparent hover:border-indigo-100 hover:bg-white transition-all shadow-sm">
+                <div className="min-w-0">
+                  <p className="font-black text-slate-800 text-base sm:text-xl truncate">{b.name}</p>
+                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-2 sm:mt-5 whitespace-nowrap">지불 {b.totalPaid.toLocaleString()}원</p>
+                </div>
+                <p className={`text-lg sm:text-2xl font-black whitespace-nowrap flex-shrink-0 ${b.netBalance > 0 ? 'text-green-600' : b.netBalance < 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                  {b.netBalance > 0 ? '+' : ''}{Math.round(b.netBalance).toLocaleString()}원
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Transfer Guide */}
+        <section className="bg-white rounded-3xl sm:rounded-[56px] shadow-sm border border-slate-200 p-6 sm:p-12">
+          <h3 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 flex items-center gap-3 sm:gap-4">
+            <ArrowRightLeft className="text-indigo-600" size={28} /> 송금 가이드
+          </h3>
+          <div className="space-y-4 sm:space-y-6">
+            {data.debts.map((d, i) => (
+              <div key={i} className="p-4 sm:p-6 bg-indigo-50/40 border-indigo-50 border-2 rounded-2xl sm:rounded-[32px] shadow-sm">
+                <div className="flex items-center justify-center gap-4 sm:gap-6 mb-3 sm:mb-4">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">보낼 사람</span>
+                    <span className="font-black text-slate-700 text-base sm:text-lg">{d.from}</span>
+                  </div>
+                  <ChevronRight className="text-indigo-400 flex-shrink-0 mt-4" size={20} />
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">받는 사람</span>
+                    <span className="font-black text-slate-700 text-base sm:text-lg">{d.to}</span>
+                  </div>
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-center text-indigo-600">
+                  {Math.round(d.amount).toLocaleString()}원
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Footer */}
         <footer className="text-center mt-10 sm:mt-16 pb-10">

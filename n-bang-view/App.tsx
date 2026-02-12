@@ -754,7 +754,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      <main className="flex-1 overflow-y-auto max-w-4xl mx-auto w-full p-4 sm:p-6 md:p-12 pb-40 lg:pb-6">
+      <main className="flex-1 overflow-y-auto max-w-4xl mx-auto w-full p-4 sm:p-6 md:p-12 pb-48 lg:pb-6">
         {/* Mobile header - back button + gathering info */}
         <div className="lg:hidden mb-6">
           <button onClick={() => setActiveGatheringId(null)} className="flex items-center gap-1 text-slate-400 hover:text-indigo-600 font-black text-sm transition-colors mb-3"><ChevronLeft size={18} /> 전체 목록</button>
